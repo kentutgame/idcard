@@ -8,7 +8,7 @@ export interface PanitiaData {
   cardNumber?: string;
   photoScale?: number;
   photoPosition?: { x: number; y: number };
-  themeVariant?: 'classic' | 'gold_modern' | 'dark_elegance';
+  themeVariant?: 'classic' | 'gold_modern' | 'dark_patriot';
   created_at?: string;
 }
 

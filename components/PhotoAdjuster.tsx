@@ -22,9 +22,12 @@ export const PhotoAdjuster: React.FC<PhotoAdjusterProps> = ({
 }) => {
   if (!hasPhoto) {
     return (
-      <div className="bg-neutral-900/60 border border-dashed border-neutral-700 rounded-xl p-4 text-center">
-        <ImageIcon className="w-8 h-8 mx-auto text-neutral-500 mb-2" />
-        <p className="text-sm text-neutral-400">Upload foto panitia terlebih dahulu untuk mengaktifkan pengaturan posisi & zoom.</p>
+      <div className="rounded-xl p-4 text-center border border-dashed"
+        style={{ background: 'rgba(15,5,30,0.8)', borderColor: 'rgba(91,45,142,0.5)' }}>
+        <ImageIcon className="w-8 h-8 mx-auto mb-2" style={{ color: 'rgba(168,85,247,0.5)' }} />
+        <p className="text-sm" style={{ color: 'rgba(216,180,254,0.5)' }}>
+          Upload foto panitia terlebih dahulu untuk mengaktifkan pengaturan posisi & zoom.
+        </p>
       </div>
     );
   }
@@ -35,25 +38,25 @@ export const PhotoAdjuster: React.FC<PhotoAdjusterProps> = ({
   };
 
   const handleMove = (dx: number, dy: number) => {
-    onPositionChange({
-      x: position.x + dx,
-      y: position.y + dy,
-    });
+    onPositionChange({ x: position.x + dx, y: position.y + dy });
   };
 
   return (
-    <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 space-y-4 shadow-xl">
-      <div className="flex items-center justify-between border-b border-neutral-800 pb-2">
+    <div className="rounded-2xl p-4 space-y-4 shadow-xl border"
+      style={{ background: 'rgba(15,5,30,0.9)', borderColor: 'rgba(91,45,142,0.5)' }}>
+      {/* Header */}
+      <div className="flex items-center justify-between border-b pb-2" style={{ borderColor: 'rgba(91,45,142,0.4)' }}>
         <div className="flex items-center gap-2">
-          <Move className="w-4 h-4 text-amber-400" />
-          <span className="text-xs font-bold uppercase tracking-wider text-neutral-200">
-            Atur & Sesuaikan Foto
+          <Move className="w-4 h-4" style={{ color: '#F5C518' }} />
+          <span className="text-xs font-bold uppercase tracking-wider text-white">
+            Atur &amp; Sesuaikan Foto
           </span>
         </div>
         <button
           type="button"
           onClick={onReset}
-          className="text-[11px] flex items-center gap-1 text-neutral-400 hover:text-amber-400 transition"
+          className="text-[11px] flex items-center gap-1 transition hover:opacity-100 opacity-60"
+          style={{ color: '#F5C518' }}
         >
           <RotateCcw className="w-3 h-3" />
           Reset Posisi
@@ -62,17 +65,18 @@ export const PhotoAdjuster: React.FC<PhotoAdjusterProps> = ({
 
       {/* Zoom Slider */}
       <div className="space-y-1.5">
-        <div className="flex justify-between text-xs text-neutral-300">
+        <div className="flex justify-between text-xs" style={{ color: 'rgba(216,180,254,0.8)' }}>
           <span className="flex items-center gap-1">
-            <ZoomIn className="w-3.5 h-3.5 text-neutral-400" /> Ukuran (Zoom)
+            <ZoomIn className="w-3.5 h-3.5" style={{ color: 'rgba(168,85,247,0.7)' }} /> Ukuran (Zoom)
           </span>
-          <span className="font-mono text-amber-400 font-bold">{Math.round(scale * 100)}%</span>
+          <span className="font-mono font-bold" style={{ color: '#F5C518' }}>{Math.round(scale * 100)}%</span>
         </div>
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => handleZoom(-0.1)}
-            className="w-8 h-8 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white flex items-center justify-center transition"
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition text-white"
+            style={{ background: 'rgba(91,45,142,0.5)', border: '1px solid rgba(91,45,142,0.8)' }}
           >
             <ZoomOut className="w-4 h-4" />
           </button>
@@ -83,57 +87,71 @@ export const PhotoAdjuster: React.FC<PhotoAdjusterProps> = ({
             step="0.05"
             value={scale}
             onChange={(e) => onScaleChange(parseFloat(e.target.value))}
-            className="w-full accent-amber-400 h-2 bg-neutral-700 rounded-lg cursor-pointer"
+            className="w-full h-2 rounded-lg cursor-pointer"
+            style={{ accentColor: '#F5C518', background: 'rgba(91,45,142,0.4)' }}
           />
           <button
             type="button"
             onClick={() => handleZoom(0.1)}
-            className="w-8 h-8 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white flex items-center justify-center transition"
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition text-white"
+            style={{ background: 'rgba(91,45,142,0.5)', border: '1px solid rgba(91,45,142,0.8)' }}
           >
             <ZoomIn className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Direction Pad (Geser Foto) */}
+      {/* Direction Pad */}
       <div className="space-y-1.5">
-        <div className="flex justify-between text-xs text-neutral-300">
-          <span>Geser Posisi Wajah</span>
-          <span className="text-[10px] text-neutral-500 font-mono">
+        <div className="flex justify-between text-xs">
+          <span style={{ color: 'rgba(216,180,254,0.8)' }}>Geser Posisi Wajah</span>
+          <span className="text-[10px] font-mono" style={{ color: 'rgba(168,85,247,0.6)' }}>
             X: {position.x}px | Y: {position.y}px
           </span>
         </div>
         <div className="flex justify-center items-center gap-1.5 pt-1">
-          <button
-            type="button"
-            onClick={() => handleMove(-10, 0)}
-            className="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 active:bg-amber-500 active:text-black text-xs font-semibold rounded-lg text-neutral-200 transition"
-          >
-            ← Kiri
-          </button>
+          {[
+            { label: '← Kiri', dx: -10, dy: 0 },
+          ].map(({ label, dx, dy }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => handleMove(dx, dy)}
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg text-white transition hover:opacity-90 active:scale-95"
+              style={{ background: 'rgba(91,45,142,0.6)', border: '1px solid rgba(91,45,142,0.8)' }}
+            >
+              {label}
+            </button>
+          ))}
           <div className="flex flex-col gap-1.5">
-            <button
-              type="button"
-              onClick={() => handleMove(0, -10)}
-              className="px-3 py-1 bg-neutral-800 hover:bg-neutral-700 active:bg-amber-500 active:text-black text-xs font-semibold rounded-lg text-neutral-200 transition"
-            >
-              ↑ Atas
-            </button>
-            <button
-              type="button"
-              onClick={() => handleMove(0, 10)}
-              className="px-3 py-1 bg-neutral-800 hover:bg-neutral-700 active:bg-amber-500 active:text-black text-xs font-semibold rounded-lg text-neutral-200 transition"
-            >
-              ↓ Bawah
-            </button>
+            {[
+              { label: '↑ Atas', dx: 0, dy: -10 },
+              { label: '↓ Bawah', dx: 0, dy: 10 },
+            ].map(({ label, dx, dy }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => handleMove(dx, dy)}
+                className="px-3 py-1 text-xs font-semibold rounded-lg text-white transition hover:opacity-90 active:scale-95"
+                style={{ background: 'rgba(91,45,142,0.6)', border: '1px solid rgba(91,45,142,0.8)' }}
+              >
+                {label}
+              </button>
+            ))}
           </div>
-          <button
-            type="button"
-            onClick={() => handleMove(10, 0)}
-            className="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 active:bg-amber-500 active:text-black text-xs font-semibold rounded-lg text-neutral-200 transition"
-          >
-            Kanan →
-          </button>
+          {[
+            { label: 'Kanan →', dx: 10, dy: 0 },
+          ].map(({ label, dx, dy }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => handleMove(dx, dy)}
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg text-white transition hover:opacity-90 active:scale-95"
+              style={{ background: 'rgba(91,45,142,0.6)', border: '1px solid rgba(91,45,142,0.8)' }}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
     </div>
