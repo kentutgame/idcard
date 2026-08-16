@@ -16,7 +16,8 @@ import {
   Sparkles,
   Printer,
   ChevronRight,
-  Layers
+  Layers,
+  FolderArchive
 } from 'lucide-react';
 import { IdCardPreview } from '@/components/IdCardPreview';
 import { PhotoAdjuster } from '@/components/PhotoAdjuster';
@@ -288,9 +289,9 @@ export default function PanitiaPage() {
       <header className="border-b border-red-900/60 bg-[#1A0000]/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative w-12 h-10">
-              <Image src="/ippcw-reborn-logo.png" alt="IPPCW REBORN" fill className="object-contain" priority />
-            </div>
+            <Link href="/" className="relative w-12 h-10 block">
+              <Image src="/logo.png" alt="IPPCW REBORN" fill className="object-contain" priority />
+            </Link>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-white tracking-wider text-base">
@@ -300,22 +301,30 @@ export default function PanitiaPage() {
                   Cimanggu Wates
                 </span>
               </div>
-              <p className="text-xs text-purple-300/70">Generator ID Card Panitia HUT RI</p>
+              <p className="text-xs text-red-300/70">Generator ID Card Panitia HUT RI</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <Link
+              href="/ilham"
+              className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-yellow-400 text-red-950 hover:bg-yellow-300 transition shadow-md"
+            >
+              <FolderArchive className="w-3.5 h-3.5" />
+              <span>Pusat Unduhan</span>
+            </Link>
+
             <Link
               href="/"
-              className="text-xs font-semibold text-red-300/70 hover:text-white transition px-3 py-1.5 rounded-lg hover:bg-red-900/40"
+              className="text-xs font-semibold text-red-300/70 hover:text-white transition px-2.5 py-1.5 rounded-lg hover:bg-red-900/40"
             >
               Beranda
             </Link>
 
-            <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-red-900/40 border border-red-700/50">
+            <div className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-red-900/40 border border-red-700/50">
               <Database className="w-3.5 h-3.5 text-emerald-400" />
               <span className="text-neutral-300">
-                {isSupabaseConfigured ? 'Supabase Connected' : 'Local Database'}
+                {isSupabaseConfigured ? 'Supabase' : 'Local'}
               </span>
             </div>
           </div>
@@ -341,11 +350,10 @@ export default function PanitiaPage() {
         {/* Status Notification */}
         {statusMessage && (
           <div
-            className={`max-w-3xl mx-auto mb-6 p-4 rounded-xl flex items-center gap-3 border ${
-              statusMessage.type === 'success'
+            className={`max-w-3xl mx-auto mb-6 p-4 rounded-xl flex items-center gap-3 border ${statusMessage.type === 'success'
                 ? 'bg-emerald-950/50 border-emerald-500/50 text-emerald-200'
                 : 'bg-yellow-950/50 border-yellow-600/50 text-yellow-200'
-            }`}
+              }`}
           >
             {statusMessage.type === 'success' ? (
               <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
@@ -469,11 +477,10 @@ export default function PanitiaPage() {
                 <button
                   type="button"
                   onClick={() => setThemeVariant('gold_modern')}
-                  className={`p-3 rounded-2xl border text-left transition flex flex-col gap-2 active:scale-[0.97] ${
-                    themeVariant === 'gold_modern'
+                  className={`p-3 rounded-2xl border text-left transition flex flex-col gap-2 active:scale-[0.97] ${themeVariant === 'gold_modern'
                       ? 'border-yellow-400 shadow-lg shadow-yellow-900/30 bg-yellow-950/30'
                       : 'border-red-900/60 bg-black/30 hover:border-red-600/60'
-                  }`}
+                    }`}
                 >
                   {/* Mini card preview */}
                   <div className="w-full h-16 rounded-lg overflow-hidden flex flex-col">
@@ -492,11 +499,10 @@ export default function PanitiaPage() {
                 <button
                   type="button"
                   onClick={() => setThemeVariant('dark_patriot')}
-                  className={`p-3 rounded-2xl border text-left transition flex flex-col gap-2 active:scale-[0.97] ${
-                    themeVariant === 'dark_patriot'
+                  className={`p-3 rounded-2xl border text-left transition flex flex-col gap-2 active:scale-[0.97] ${themeVariant === 'dark_patriot'
                       ? 'border-yellow-400 shadow-lg shadow-yellow-900/30 bg-yellow-950/30'
                       : 'border-red-900/60 bg-black/30 hover:border-red-600/60'
-                  }`}
+                    }`}
                 >
                   <div className="w-full h-16 rounded-lg overflow-hidden flex flex-col">
                     <div className="flex-[2] bg-gradient-to-b from-zinc-950 to-zinc-900" style={{ borderBottom: '2px solid #DC2626' }} />
@@ -514,11 +520,10 @@ export default function PanitiaPage() {
                 <button
                   type="button"
                   onClick={() => setThemeVariant('classic')}
-                  className={`p-3 rounded-2xl border text-left transition flex flex-col gap-2 active:scale-[0.97] ${
-                    themeVariant === 'classic'
+                  className={`p-3 rounded-2xl border text-left transition flex flex-col gap-2 active:scale-[0.97] ${themeVariant === 'classic'
                       ? 'border-yellow-400 shadow-lg shadow-yellow-900/30 bg-yellow-950/30'
                       : 'border-red-900/60 bg-black/30 hover:border-red-600/60'
-                  }`}
+                    }`}
                 >
                   <div className="w-full h-16 rounded-lg overflow-hidden flex flex-col">
                     <div className="flex-[2] bg-white" style={{ borderBottom: '3px solid #DC2626' }} />
