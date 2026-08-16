@@ -125,14 +125,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="border-t py-5 text-center text-xs border-red-900/40 text-red-300/40">
-        <p>© 2026 <span className="text-yellow-400 font-bold">IPPCW REBORN</span> – Cimanggu Wates. Dirgahayu Republik Indonesia Ke-81. 🇮🇩</p>
-      </footer>
-
-      {/* Bottom Gold Stripe */}
-      <div className="h-1.5 w-full" style={{ background: 'linear-gradient(90deg, #78350F, #F59E0B, #FBBF24, #F59E0B, #78350F)' }}></div>
     </div>
   );
 }
