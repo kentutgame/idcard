@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, ShieldCheck, Download, User, Image as ImageIcon, Sparkles, FolderArchive } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Download, User, Image as ImageIcon, Sparkles } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -26,29 +26,19 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Link
-            href="/ilham"
-            className="px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider transition flex items-center gap-2 bg-red-950/80 border border-red-700/60 text-yellow-300 hover:bg-red-900/60"
-          >
-            <FolderArchive className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Pusat Unduhan</span>
-          </Link>
-
-          <Link
-            href="/panitia"
-            className="px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition flex items-center gap-2"
-            style={{
-              background: 'linear-gradient(135deg, #F5C518, #FFD700)',
-              color: '#3B0F6F',
-              border: '2px solid rgba(255,255,255,0.4)',
-              boxShadow: '0 4px 20px rgba(245,197,24,0.35)',
-            }}
-          >
-            <span>Buka Studio</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
+        <Link
+          href="/panitia"
+          className="px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition flex items-center gap-2"
+          style={{
+            background: 'linear-gradient(135deg, #F5C518, #FFD700)',
+            color: '#3B0F6F',
+            border: '2px solid rgba(255,255,255,0.4)',
+            boxShadow: '0 4px 20px rgba(245,197,24,0.35)',
+          }}
+        >
+          <span>Buka Studio</span>
+          <ArrowRight className="w-4 h-4" />
+        </Link>
       </nav>
 
       {/* Hero Section */}
@@ -81,33 +71,23 @@ export default function Home() {
 
         <p className="text-base sm:text-lg max-w-2xl mx-auto font-normal leading-relaxed mb-10 text-red-200/70">
           Buat kartu panitia 17-an resmi <strong className="text-yellow-400">Cimanggu Wates</strong> berukuran standar KTP/ID Card.
-          Kustomisasi foto, 3 pilihan tema Merah Putih elegan, dan download satuan atau batch sekaligus via database Supabase.
+          Kustomisasi foto, 3 pilihan tema Merah Putih elegan, dan download langsung resolusi tinggi siap cetak.
         </p>
 
-        {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <Link
-            href="/panitia"
-            className="w-full sm:w-auto px-10 py-4 rounded-2xl font-black text-base uppercase tracking-widest active:scale-[0.98] transition flex items-center justify-center gap-3"
-            style={{
-              background: 'linear-gradient(135deg, #F5C518 0%, #FFD700 60%, #F5C518 100%)',
-              color: '#3B0F6F',
-              border: '2px solid rgba(255,255,255,0.2)',
-              boxShadow: '0 6px 30px rgba(245,197,24,0.45), 0 0 60px rgba(245,197,24,0.15)',
-            }}
-          >
-            <span>Buat Kartu Sekarang</span>
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-
-          <Link
-            href="/ilham"
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-sm uppercase tracking-wider transition flex items-center justify-center gap-2.5 bg-red-950/60 border border-red-700 text-yellow-300 hover:bg-red-900/60"
-          >
-            <FolderArchive className="w-5 h-5 text-yellow-400" />
-            <span>Pusat Unduhan / Arsip</span>
-          </Link>
-        </div>
+        {/* CTA Button */}
+        <Link
+          href="/panitia"
+          className="px-10 py-4 rounded-2xl font-black text-base uppercase tracking-widest active:scale-[0.98] transition flex items-center justify-center gap-3"
+          style={{
+            background: 'linear-gradient(135deg, #F5C518 0%, #FFD700 60%, #F5C518 100%)',
+            color: '#3B0F6F',
+            border: '2px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 6px 30px rgba(245,197,24,0.45), 0 0 60px rgba(245,197,24,0.15)',
+          }}
+        >
+          <span>Buat Kartu Sekarang</span>
+          <ArrowRight className="w-5 h-5" />
+        </Link>
 
         {/* Features Highlights */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-16 text-left w-full">
@@ -138,9 +118,9 @@ export default function Home() {
               style={{ background: 'rgba(127,29,29,0.4)', border: '1px solid rgba(245,197,24,0.4)' }}>
               <Download className="w-5 h-5 text-yellow-400" />
             </div>
-            <h3 className="font-bold text-white text-sm mb-1">Download Satuan &amp; Sekaligus (ZIP)</h3>
+            <h3 className="font-bold text-white text-sm mb-1">Export HD Siap Cetak</h3>
             <p className="text-xs text-red-200/60">
-              Halaman <code className="text-yellow-300 font-bold">/ilham</code> untuk mengunduh kartu satu per satu atau unduh semua kartu dalam 1 file ZIP HD.
+              Unduh kartu panitia dalam format gambar PNG resolusi tinggi (3x pixel ratio) yang jernih dan tajam saat diprint.
             </p>
           </div>
         </div>

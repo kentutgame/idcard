@@ -16,8 +16,7 @@ import {
   Sparkles,
   Printer,
   ChevronRight,
-  Layers,
-  FolderArchive
+  Layers
 } from 'lucide-react';
 import { IdCardPreview } from '@/components/IdCardPreview';
 import { PhotoAdjuster } from '@/components/PhotoAdjuster';
@@ -305,23 +304,15 @@ export default function PanitiaPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <Link
-              href="/ilham"
-              className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-yellow-400 text-red-950 hover:bg-yellow-300 transition shadow-md"
-            >
-              <FolderArchive className="w-3.5 h-3.5" />
-              <span>Pusat Unduhan</span>
-            </Link>
-
+          <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="text-xs font-semibold text-red-300/70 hover:text-white transition px-2.5 py-1.5 rounded-lg hover:bg-red-900/40"
+              className="text-xs font-semibold text-red-300/70 hover:text-white transition px-3 py-1.5 rounded-lg hover:bg-red-900/40"
             >
               Beranda
             </Link>
 
-            <div className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-red-900/40 border border-red-700/50">
+            <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-red-900/40 border border-red-700/50">
               <Database className="w-3.5 h-3.5 text-emerald-400" />
               <span className="text-neutral-300">
                 {isSupabaseConfigured ? 'Supabase' : 'Local'}
