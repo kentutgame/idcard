@@ -234,17 +234,17 @@ function Theme2({
         </div>
       </div>
 
-      {/* ── BODY ── dark */}
+      {/* ── BODY ── #BA1414 ── */}
       <div className="relative flex-1 flex flex-col items-center justify-start pt-[124px] z-10"
-        style={{ background: 'linear-gradient(180deg,#111 0%,#0D0D0D 100%)' }}>
+        style={{ background: '#BA1414' }}>
 
         {/* PHOTO — bigger */}
         <div className="absolute -top-[52px] z-10">
           <div className="rounded-full p-[4px] shadow-2xl"
-            style={{ background: 'linear-gradient(135deg,#DC2626,#D97706,#DC2626)', width: '168px', height: '168px' }}>
-            <div className="w-full h-full rounded-full p-[3px]" style={{ background: '#111' }}>
+            style={{ background: 'linear-gradient(135deg,#D97706,#FCD34D,#B8860B)', width: '168px', height: '168px' }}>
+            <div className="w-full h-full rounded-full p-[3px]" style={{ background: '#1A0000' }}>
               <div className="w-full h-full rounded-full overflow-hidden"
-                style={{ border: '2.5px solid #7F1D1D' }}>
+                style={{ border: '2.5px solid #FCD34D' }}>
                 <PhotoInner photoUrl={photoUrl} photoScale={photoScale} photoPosition={photoPosition} name={name} />
               </div>
             </div>
@@ -253,10 +253,10 @@ function Theme2({
 
         {/* NAME */}
         <div className="w-full px-5 mt-1">
-          <div className="w-full py-2.5 px-3 rounded-xl text-center shadow-sm"
-            style={{ background: 'rgba(127,29,29,0.3)', border: '1.5px solid rgba(220,38,38,0.6)' }}>
+          <div className="w-full py-2.5 px-3 rounded-xl text-center shadow-md"
+            style={{ background: 'rgba(0,0,0,0.45)', border: '1.5px solid rgba(252,211,77,0.5)' }}>
             <h2 className="font-black uppercase leading-tight text-white tracking-wide"
-              style={{ fontSize: name.length > 22 ? '12px' : name.length > 16 ? '15px' : '17px', textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>
+              style={{ fontSize: name.length > 22 ? '12px' : name.length > 16 ? '15px' : '17px', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
               {name || 'NAMA PANITIA'}
             </h2>
           </div>

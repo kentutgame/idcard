@@ -500,12 +500,12 @@ export default function PanitiaPage() {
                 >
                   <div className="w-full h-16 rounded-lg overflow-hidden flex flex-col">
                     <div className="flex-[2] bg-gradient-to-b from-zinc-950 to-zinc-900" style={{ borderBottom: '2px solid #DC2626' }} />
-                    <div className="flex-[3] bg-zinc-950" />
+                    <div className="flex-[3]" style={{ background: '#BA1414' }} />
                     <div className="flex-[2] bg-black" style={{ borderTop: '2px solid #DC2626' }} />
                   </div>
                   <div>
                     <span className="text-xs font-bold text-white block">Dark Patriot</span>
-                    <span className="text-[10px] text-red-300/60">Hitam elegan, aksen merah & emas</span>
+                    <span className="text-[10px] text-red-300/60">Header hitam, badan merah #BA1414</span>
                   </div>
                   {themeVariant === 'dark_patriot' && <span className="text-[9px] text-yellow-400 font-bold">✓ AKTIF</span>}
                 </button>
