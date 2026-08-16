@@ -107,8 +107,7 @@ export const LombaBracketView: React.FC<LombaBracketViewProps> = ({
   const handleDrop = (
     e: React.DragEvent,
     targetMatchId: string,
-    targetSlot: 'A' | 'B',
-    targetRoundIndex: number
+    targetSlot: 'A' | 'B'
   ) => {
     e.preventDefault();
     setDragOverTarget(null);
@@ -426,7 +425,7 @@ export const LombaBracketView: React.FC<LombaBracketViewProps> = ({
                           onDragStart={(e) => handleDragStart(e, match.id, 'A', rIdx, match.pesertaA)}
                           onDragOver={(e) => handleDragOver(e, match.id, 'A')}
                           onDragLeave={handleDragLeave}
-                          onDrop={(e) => handleDrop(e, match.id, 'A', rIdx)}
+                          onDrop={(e) => handleDrop(e, match.id, 'A')}
                           className={`p-3 border-b border-slate-700/50 flex items-center justify-between gap-2 transition select-none ${
                             isDragOverSlotA 
                               ? 'bg-amber-500/30 border-2 border-dashed border-amber-400 scale-[1.02]' 
@@ -441,7 +440,7 @@ export const LombaBracketView: React.FC<LombaBracketViewProps> = ({
                         >
                           <div className="flex items-center gap-1.5 flex-1 min-w-0">
                             {match.pesertaA && (
-                              <GripVertical className="w-3.5 h-3.5 text-slate-500 hover:text-amber-400 shrink-0" title="Drag untuk menukar lawan" />
+                              <GripVertical className="w-3.5 h-3.5 text-slate-500 hover:text-amber-400 shrink-0" />
                             )}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5">
@@ -499,7 +498,7 @@ export const LombaBracketView: React.FC<LombaBracketViewProps> = ({
                           onDragStart={(e) => handleDragStart(e, match.id, 'B', rIdx, match.pesertaB)}
                           onDragOver={(e) => handleDragOver(e, match.id, 'B')}
                           onDragLeave={handleDragLeave}
-                          onDrop={(e) => handleDrop(e, match.id, 'B', rIdx)}
+                          onDrop={(e) => handleDrop(e, match.id, 'B')}
                           className={`p-3 flex items-center justify-between gap-2 transition select-none ${
                             isDragOverSlotB 
                               ? 'bg-amber-500/30 border-2 border-dashed border-amber-400 scale-[1.02]' 
@@ -514,7 +513,7 @@ export const LombaBracketView: React.FC<LombaBracketViewProps> = ({
                         >
                           <div className="flex items-center gap-1.5 flex-1 min-w-0">
                             {match.pesertaB && (
-                              <GripVertical className="w-3.5 h-3.5 text-slate-500 hover:text-amber-400 shrink-0" title="Drag untuk menukar lawan" />
+                              <GripVertical className="w-3.5 h-3.5 text-slate-500 hover:text-amber-400 shrink-0" />
                             )}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5">
@@ -617,7 +616,7 @@ export const LombaBracketView: React.FC<LombaBracketViewProps> = ({
                 Pilih slot tujuan pertukaran:
               </span>
 
-              {rounds[0]?.matches.map((m, mIdx) => (
+              {rounds[0]?.matches.map((m) => (
                 <div key={m.id} className="p-2.5 bg-slate-800 rounded-xl border border-slate-700 space-y-1.5 text-xs">
                   <span className="font-bold text-slate-400 text-[11px] block">{m.namaBabak}</span>
                   <div className="grid grid-cols-2 gap-2">

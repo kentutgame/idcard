@@ -4,20 +4,20 @@ import { Lomba } from '@/types/lomba';
 const STORAGE_KEY_LOMBA = 'loba_competition_data';
 
 // Helper mapping format Database Supabase ke Type Lomba
-function mapDbToLomba(row: any): Lomba {
+function mapDbToLomba(row: Record<string, unknown>): Lomba {
   return {
-    id: row.id,
-    judul: row.judul,
-    kategori: row.kategori,
-    tipePeserta: row.tipe_peserta,
-    formatTanding: row.format_tanding,
-    status: row.status,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    pesertaIndividu: row.peserta_individu || [],
-    daftarTim: row.daftar_tim || [],
-    rounds: row.rounds || [],
-    hasilJuara: row.hasil_juara || { juara1: null, juara2: null, juara3: null }
+    id: String(row.id || ''),
+    judul: String(row.judul || ''),
+    kategori: (row.kategori as Lomba['kategori']) || 'anak-anak',
+    tipePeserta: (row.tipe_peserta as Lomba['tipePeserta']) || 'kelompok',
+    formatTanding: (row.format_tanding as Lomba['formatTanding']) || 'bracket',
+    status: (row.status as Lomba['status']) || 'draft',
+    createdAt: String(row.created_at || new Date().toISOString()),
+    updatedAt: String(row.updated_at || new Date().toISOString()),
+    pesertaIndividu: Array.isArray(row.peserta_individu) ? (row.peserta_individu as Lomba['pesertaIndividu']) : [],
+    daftarTim: Array.isArray(row.daftar_tim) ? (row.daftar_tim as Lomba['daftarTim']) : [],
+    rounds: Array.isArray(row.rounds) ? (row.rounds as Lomba['rounds']) : [],
+    hasilJuara: (row.hasil_juara as Lomba['hasilJuara']) || { juara1: null, juara2: null, juara3: null }
   };
 }
 
