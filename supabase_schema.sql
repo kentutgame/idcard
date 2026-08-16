@@ -1,9 +1,9 @@
 -- ============================================================
--- SQL Schema untuk ID Card Panitia 17-an (IPPCW REBORN)
+-- SQL Schema untuk ID Card Panitia & Sistem Lomba 17-an (IPPCW REBORN)
 -- Jalankan query ini di menu SQL Editor di Supabase Dashboard Anda
 -- ============================================================
 
--- 1. Buat Tabel panitia_cards
+-- 1. Buat Tabel panitia_cards (Untuk ID Card)
 CREATE TABLE IF NOT EXISTS public.panitia_cards (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -17,28 +17,33 @@ CREATE TABLE IF NOT EXISTS public.panitia_cards (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 2. Aktifkan Row Level Security (RLS)
 ALTER TABLE public.panitia_cards ENABLE ROW LEVEL SECURITY;
 
--- 3. Policy: Izinkan siapa saja membaca data kartu panitia (Public Read)
-CREATE POLICY "Allow public read panitia_cards" 
-ON public.panitia_cards 
-FOR SELECT 
-USING (true);
+CREATE POLICY "Allow public read panitia_cards" ON public.panitia_cards FOR SELECT USING (true);
+CREATE POLICY "Allow public insert panitia_cards" ON public.panitia_cards FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update panitia_cards" ON public.panitia_cards FOR UPDATE USING (true);
+CREATE POLICY "Allow public delete panitia_cards" ON public.panitia_cards FOR DELETE USING (true);
 
--- 4. Policy: Izinkan siapa saja membuat kartu panitia baru (Public Insert)
-CREATE POLICY "Allow public insert panitia_cards" 
-ON public.panitia_cards 
-FOR INSERT 
-WITH CHECK (true);
 
--- 5. Policy: Izinkan update/delete jika diperlukan
-CREATE POLICY "Allow public update panitia_cards" 
-ON public.panitia_cards 
-FOR UPDATE 
-USING (true);
+-- 2. Buat Tabel lomba_competitions (Untuk Sistem Manajemen Lomba & Bracket)
+CREATE TABLE IF NOT EXISTS public.lomba_competitions (
+    id TEXT PRIMARY KEY,
+    judul VARCHAR(255) NOT NULL,
+    kategori VARCHAR(50) NOT NULL,
+    tipe_peserta VARCHAR(50) NOT NULL,
+    format_tanding VARCHAR(50) NOT NULL,
+    status VARCHAR(50) DEFAULT 'draft',
+    peserta_individu JSONB DEFAULT '[]'::jsonb,
+    daftar_tim JSONB DEFAULT '[]'::jsonb,
+    rounds JSONB DEFAULT '[]'::jsonb,
+    hasil_juara JSONB DEFAULT '{"juara1": null, "juara2": null, "juara3": null}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
 
-CREATE POLICY "Allow public delete panitia_cards" 
-ON public.panitia_cards 
-FOR DELETE 
-USING (true);
+ALTER TABLE public.lomba_competitions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read lomba_competitions" ON public.lomba_competitions FOR SELECT USING (true);
+CREATE POLICY "Allow public insert lomba_competitions" ON public.lomba_competitions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update lomba_competitions" ON public.lomba_competitions FOR UPDATE USING (true);
+CREATE POLICY "Allow public delete lomba_competitions" ON public.lomba_competitions FOR DELETE USING (true);

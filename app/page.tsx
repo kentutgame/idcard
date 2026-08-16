@@ -26,19 +26,28 @@ export default function Home() {
           </div>
         </div>
 
-        <Link
-          href="/panitia"
-          className="px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition flex items-center gap-2"
-          style={{
-            background: 'linear-gradient(135deg, #F5C518, #FFD700)',
-            color: '#3B0F6F',
-            border: '2px solid rgba(255,255,255,0.4)',
-            boxShadow: '0 4px 20px rgba(245,197,24,0.35)',
-          }}
-        >
-          <span>Buka Studio</span>
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/loba"
+            className="px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider bg-red-950/80 hover:bg-red-900 text-red-200 border border-red-700/60 shadow transition flex items-center gap-1.5"
+          >
+            <span>🏆 Sistem Lomba</span>
+          </Link>
+
+          <Link
+            href="/panitia"
+            className="px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition flex items-center gap-2"
+            style={{
+              background: 'linear-gradient(135deg, #F5C518, #FFD700)',
+              color: '#3B0F6F',
+              border: '2px solid rgba(255,255,255,0.4)',
+              boxShadow: '0 4px 20px rgba(245,197,24,0.35)',
+            }}
+          >
+            <span>Buka Studio</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
       </nav>
 
       {/* Hero Section */}
