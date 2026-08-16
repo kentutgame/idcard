@@ -76,9 +76,12 @@ export default function IlhamDashboardPage() {
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase fetch error:', error);
+          throw error;
+        }
 
-        if (data && data.length > 0) {
+        if (data) {
           const formatted: PanitiaData[] = data.map((item: any) => ({
             id: item.id,
             name: item.name,
@@ -91,16 +94,37 @@ export default function IlhamDashboardPage() {
             themeVariant: item.theme_variant || 'gold_modern',
             created_at: item.created_at,
           }));
+
           setCards(formatted);
+          // Cache ke local storage
+          try {
+            localStorage.setItem('ippcw_panitia_cards', JSON.stringify(formatted));
+          } catch (e) {
+            // ignore
+          }
+
+          if (formatted.length === 0) {
+            // Jika di Supabase kosong, cek apakah ada di local storage yang belum terunggah
+            const localData = localStorage.getItem('ippcw_panitia_cards') || localStorage.getItem('saved_panitia_cards');
+            if (localData) {
+              const localParsed = JSON.parse(localData);
+              if (localParsed.length > 0) {
+                setCards(localParsed);
+                setStatusMessage({
+                  type: 'info',
+                  text: 'Database Supabase masih kosong. Menampilkan kartu dari memori lokal.',
+                });
+              }
+            }
+          }
           return;
         }
       }
 
-      // Fallback to local storage
+      // Fallback to local storage jika Supabase tidak terkonfigurasi
       const localData = localStorage.getItem('ippcw_panitia_cards') || localStorage.getItem('saved_panitia_cards');
       if (localData) {
-        const parsed = JSON.parse(localData);
-        setCards(parsed);
+        setCards(JSON.parse(localData));
       } else {
         setCards([]);
       }
@@ -113,8 +137,8 @@ export default function IlhamDashboardPage() {
         setCards([]);
       }
       setStatusMessage({
-        type: 'info',
-        text: 'Memuat data dari memori lokal (Supabase belum terhubung).',
+        type: 'error',
+        text: `Koneksi Supabase bermasalah (${err?.message || 'Error'}). Menampilkan data lokal.`,
       });
     } finally {
       setIsLoading(false);
@@ -132,24 +156,28 @@ export default function IlhamDashboardPage() {
     }
 
     try {
-      if (isSupabaseConfigured && supabase) {
+      if (isSupabaseConfigured && supabase && id && id.includes('-')) {
         const { error } = await supabase.from('panitia_cards').delete().eq('id', id);
         if (error) console.warn('Supabase delete error:', error);
       }
 
       const updated = cards.filter((c) => c.id !== id);
       setCards(updated);
-      localStorage.setItem('ippcw_panitia_cards', JSON.stringify(updated));
+      try {
+        localStorage.setItem('ippcw_panitia_cards', JSON.stringify(updated));
+      } catch (e) {
+        // ignore
+      }
 
       setStatusMessage({
         type: 'success',
         text: `Kartu "${name}" berhasil dihapus.`,
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       setStatusMessage({
         type: 'error',
-        text: 'Gagal menghapus kartu.',
+        text: `Gagal menghapus kartu: ${err?.message || 'Error'}`,
       });
     }
   };

@@ -22,6 +22,7 @@ import { IdCardPreview } from '@/components/IdCardPreview';
 import { PhotoAdjuster } from '@/components/PhotoAdjuster';
 import { PanitiaData } from '@/types/panitia';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { compressImage } from '@/lib/imageUtils';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -41,6 +42,7 @@ export default function PanitiaPage() {
   // UI state
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isCompressingPhoto, setIsCompressingPhoto] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [savedPanitiaList, setSavedPanitiaList] = useState<PanitiaData[]>([]);
   const [isLoadingList, setIsLoadingList] = useState<boolean>(false);
@@ -106,24 +108,43 @@ export default function PanitiaPage() {
     fetchPanitiaList();
   }, [fetchPanitiaList]);
 
-  // Handle Photo Upload
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle Photo Upload dengan Kompresi Otomatis
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 8 * 1024 * 1024) {
-        setStatusMessage({ type: 'error', text: 'Ukuran foto maksimal 8MB.' });
+      if (file.size > 15 * 1024 * 1024) {
+        setStatusMessage({ type: 'error', text: 'Ukuran foto maksimal 15MB.' });
         return;
       }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setPhotoUrl(event.target.result as string);
-          setPhotoScale(1.0);
-          setPhotoPosition({ x: 0, y: 0 });
-          setStatusMessage({ type: 'success', text: 'Foto berhasil diunggah! Sesuaikan posisi di bawah.' });
-        }
-      };
-      reader.readAsDataURL(file);
+
+      setIsCompressingPhoto(true);
+      setStatusMessage(null);
+
+      try {
+        // Kompres foto secara cerdas agar ringan (< 100KB) dan tajam untuk database
+        const compressedBase64 = await compressImage(file, 800, 800, 0.85);
+        setPhotoUrl(compressedBase64);
+        setPhotoScale(1.0);
+        setPhotoPosition({ x: 0, y: 0 });
+        setStatusMessage({
+          type: 'success',
+          text: 'Foto berhasil diunggah & dioptimalkan! Sesuaikan posisi di bawah.',
+        });
+      } catch (err) {
+        console.error('Photo compression error:', err);
+        // Fallback FileReader biasa jika canvas bermasalah
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            setPhotoUrl(event.target.result as string);
+            setPhotoScale(1.0);
+            setPhotoPosition({ x: 0, y: 0 });
+          }
+        };
+        reader.readAsDataURL(file);
+      } finally {
+        setIsCompressingPhoto(false);
+      }
     }
   };
 
@@ -201,7 +222,7 @@ export default function PanitiaPage() {
 
     try {
       if (isSupabaseConfigured && supabase) {
-        const { error } = await supabase.from('panitia_cards').insert([
+        const { data, error } = await supabase.from('panitia_cards').insert([
           {
             name: newEntry.name,
             role: newEntry.role,
@@ -211,34 +232,40 @@ export default function PanitiaPage() {
             photo_position: newEntry.photoPosition,
             theme_variant: newEntry.themeVariant,
           },
-        ]);
+        ]).select();
 
         if (error) {
-          console.warn('Supabase insert failed:', error);
+          console.error('Supabase insert failed:', error);
           saveToLocal(newEntry);
           setStatusMessage({
-            type: 'success',
-            text: 'Data kartu disimpan ke memori lokal browser (Tabel Supabase belum terhubung).',
+            type: 'error',
+            text: `Gagal simpan ke Supabase: ${error.message}. (Data tersimpan di memori lokal cadangan)`,
           });
         } else {
+          // Berhasil masuk database Supabase
+          saveToLocal(newEntry); // simpan cadangan lokal juga
           triggerCelebration();
           setStatusMessage({
             type: 'success',
-            text: 'Data kartu berhasil tersimpan ke Database Supabase!',
+            text: `Data kartu "${newEntry.name}" berhasil tersimpan ke Database Supabase!`,
           });
         }
       } else {
         saveToLocal(newEntry);
         setStatusMessage({
           type: 'success',
-          text: 'Data kartu berhasil disimpan secara lokal! (Siap diekspor ke Supabase saat variabel diset)',
+          text: 'Data kartu berhasil disimpan ke memori lokal browser (Supabase belum disetting).',
         });
       }
 
-      fetchPanitiaList();
-    } catch (err) {
+      await fetchPanitiaList();
+    } catch (err: any) {
       console.error('Save error:', err);
       saveToLocal(newEntry);
+      setStatusMessage({
+        type: 'error',
+        text: `Terjadi kendala saat menyimpan: ${err?.message || 'Error tidak diketahui'}.`,
+      });
     } finally {
       setIsSaving(false);
     }
@@ -248,7 +275,9 @@ export default function PanitiaPage() {
     try {
       const existing = localStorage.getItem('ippcw_panitia_cards');
       const list: PanitiaData[] = existing ? JSON.parse(existing) : [];
-      const updated = [item, ...list];
+      // Hapus jika ada duplikat berdasarkan nama atau nomor kartu
+      const filtered = list.filter((c) => c.id !== item.id && c.cardNumber !== item.cardNumber);
+      const updated = [item, ...filtered];
       localStorage.setItem('ippcw_panitia_cards', JSON.stringify(updated));
       setSavedPanitiaList(updated);
     } catch (e) {
