@@ -12,9 +12,9 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  ArrowRight,
   UserCheck,
-  Award
+  Award,
+  X
 } from 'lucide-react';
 import { Lomba, MultiMatch, PesertaRef, HasilJuara, StatusPesertaHeat } from '@/types/lomba';
 import { convertToPesertaRefs, generateInitialMultiMatches } from '@/lib/bracketUtils';
@@ -39,6 +39,35 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
 
   const [activeTab, setActiveTab] = useState<'matches' | 'roster_status'>('matches');
   const [filterRoster, setFilterRoster] = useState<'semua' | 'belum' | 'sudah' | 'lolos' | 'gugur'>('semua');
+
+  // Modal Draft Final Langsung (Tunjuk Juara 1, 2, 3, 4)
+  const [isDraftFinalOpen, setIsDraftFinalOpen] = useState(false);
+  const [draftJuara1Id, setDraftJuara1Id] = useState<string>(lomba.hasilJuara?.juara1?.id || '');
+  const [draftJuara2Id, setDraftJuara2Id] = useState<string>(lomba.hasilJuara?.juara2?.id || '');
+  const [draftJuara3Id, setDraftJuara3Id] = useState<string>(lomba.hasilJuara?.juara3?.id || '');
+  const [draftJuaraHarapanId, setDraftJuaraHarapanId] = useState<string>(lomba.hasilJuara?.juaraHarapan?.id || '');
+
+  // 1. Kumpulkan daftar ID peserta yang sudah GUGUR di pertandingan mana pun
+  const eliminatedParticipantIds = new Set<string>();
+  matches.forEach(m => {
+    m.pesertaList.forEach(p => {
+      if (p.statusLolos === 'gugur') {
+        eliminatedParticipantIds.add(p.peserta.id);
+      }
+    });
+  });
+
+  // Kumpulkan daftar peserta yang LOLOS
+  const qualifiedPesertaList: PesertaRef[] = [];
+  const qualifiedIdSet = new Set<string>();
+  matches.forEach(m => {
+    m.pesertaList.forEach(p => {
+      if (p.statusLolos === 'lolos' && !qualifiedIdSet.has(p.peserta.id)) {
+        qualifiedIdSet.add(p.peserta.id);
+        qualifiedPesertaList.push(p.peserta);
+      }
+    });
+  });
 
   // Menentukan pemenang tunggal di match tertentu (1 Lolos, sisanya otomatis Gugur)
   const handleSetMatchWinner = (matchId: string, winnerPesertaId: string) => {
@@ -122,45 +151,6 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
     });
   };
 
-  // Buat Babak Selanjutnya (Final) otomatis dari semua peserta yang berstatus LOLOS
-  const handleCreateNextRoundFromWinners = () => {
-    // Kumpulkan semua peserta unik yang lolos dari seluruh pertandingan
-    const qualifiedMap = new Map<string, PesertaRef>();
-    matches.forEach(m => {
-      m.pesertaList.forEach(p => {
-        if (p.statusLolos === 'lolos') {
-          qualifiedMap.set(p.peserta.id, p.peserta);
-        }
-      });
-    });
-
-    const qualifiedList = Array.from(qualifiedMap.values());
-
-    if (qualifiedList.length === 0) {
-      alert('Belum ada peserta yang lolos! Silakan tentukan pemenang di pertandingan penyisihan terlebih dahulu.');
-      return;
-    }
-
-    const finalMatch: MultiMatch = {
-      id: `match_final_${Date.now()}`,
-      namaMatch: `Babak Final (${qualifiedList.length} Peserta Lolos)`,
-      babak: 'Final',
-      status: 'pending',
-      pesertaList: qualifiedList.map(p => ({
-        peserta: p,
-        skor: 0,
-        statusLolos: 'belum'
-      }))
-    };
-
-    onUpdateLomba({
-      ...lomba,
-      multiMatches: [...matches, finalMatch]
-    });
-
-    alert(`Berhasil membuat Babak Final dengan ${qualifiedList.length} peserta yang lolos!`);
-  };
-
   // Hapus Pertandingan
   const handleDeleteMatch = (matchId: string) => {
     if (matches.length <= 1) {
@@ -176,9 +166,14 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
     }
   };
 
-  // Tambah Peserta ke Match tertentu
+  // Tambah Peserta ke Match tertentu (HANYA PESERTA YANG BELUM GUGUR)
   const handleAddPesertaToMatch = (matchId: string, pesertaId: string) => {
     if (!pesertaId) return;
+    if (eliminatedParticipantIds.has(pesertaId)) {
+      alert('Peserta ini sudah gugur di pertandingan sebelumnya dan tidak bisa dimasukkan kembali!');
+      return;
+    }
+
     const targetRef = pesertaRefs.find(p => p.id === pesertaId);
     if (!targetRef) return;
 
@@ -218,7 +213,6 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
 
   // Hitung Status Real-Time Seluruh Peserta: Belum, Sudah, Lolos, Gugur
   const participantsStatusList = pesertaRefs.map(p => {
-    // Cari status peserta di seluruh match
     let isPlayed = false;
     let isQualified = false;
     let isEliminated = false;
@@ -270,17 +264,37 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
     return true;
   });
 
-  // Kunci Hasil Juara 1, 2, 3 ke Podium
-  const handleLockPodium = (j1: PesertaRef | null, j2: PesertaRef | null, j3: PesertaRef | null) => {
-    if (!j1) {
-      alert('Pilih minimal Juara 1 untuk dikunci ke podium!');
+  // Buka Modal Draft Penentuan Final
+  const handleOpenDraftFinal = () => {
+    // Auto-prefill jika sudah ada peserta lolos
+    if (qualifiedPesertaList.length > 0) {
+      if (!draftJuara1Id && qualifiedPesertaList[0]) setDraftJuara1Id(qualifiedPesertaList[0].id);
+      if (!draftJuara2Id && qualifiedPesertaList[1]) setDraftJuara2Id(qualifiedPesertaList[1].id);
+      if (!draftJuara3Id && qualifiedPesertaList[2]) setDraftJuara3Id(qualifiedPesertaList[2].id);
+      if (!draftJuaraHarapanId && qualifiedPesertaList[3]) setDraftJuaraHarapanId(qualifiedPesertaList[3].id);
+    }
+    setIsDraftFinalOpen(true);
+  };
+
+  // Simpan Draft Final & Kunci ke Podium
+  const handleSaveDraftFinal = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!draftJuara1Id) {
+      alert('Silakan pilih peserta untuk Juara 1!');
       return;
     }
+
+    const j1 = pesertaRefs.find(p => p.id === draftJuara1Id) || null;
+    const j2 = pesertaRefs.find(p => p.id === draftJuara2Id) || null;
+    const j3 = pesertaRefs.find(p => p.id === draftJuara3Id) || null;
+    const j4 = pesertaRefs.find(p => p.id === draftJuaraHarapanId) || null;
 
     const hasilJuara: HasilJuara = {
       juara1: j1,
       juara2: j2,
-      juara3: j3
+      juara3: j3,
+      juaraHarapan: j4
     };
 
     onUpdateLomba({
@@ -289,18 +303,19 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
       hasilJuara
     });
 
+    setIsDraftFinalOpen(false);
     onFinishLomba();
   };
 
   // Reset Semua Pertandingan
   const handleResetAll = () => {
-    if (confirm('Reset semua bagan pertandingan & status peserta ke awal?')) {
+    if (confirm('Reset semua pertandingan & status peserta ke awal?')) {
       const freshMatches = generateInitialMultiMatches(pesertaRefs);
       onUpdateLomba({
         ...lomba,
         status: 'draft',
         multiMatches: freshMatches,
-        hasilJuara: { juara1: null, juara2: null, juara3: null }
+        hasilJuara: { juara1: null, juara2: null, juara3: null, juaraHarapan: null }
       });
     }
   };
@@ -421,7 +436,7 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
               Sistem Eliminasi Heat & Lolos Babak ({matches.length} Pertandingan)
             </h3>
             <p className="text-xs text-slate-400">
-              Pilih pemenang di tiap pertandingan untuk melaju ke babak berikutnya, yang kalah otomatis gugur
+              Peserta yang gugur otomatis tidak bisa dipilih lagi di pertandingan berikutnya
             </p>
           </div>
         </div>
@@ -463,16 +478,15 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
             <Plus className="w-3.5 h-3.5" /> Tambah Heat
           </button>
 
-          {totalLolos > 0 && (
-            <button
-              type="button"
-              onClick={handleCreateNextRoundFromWinners}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white text-xs font-bold rounded-xl transition shadow"
-              title="Kumpulkan semua peserta lolos ke dalam 1 babak final"
-            >
-              <Sparkles className="w-3.5 h-3.5" /> Buat Babak Final ({totalLolos} Lolos)
-            </button>
-          )}
+          {/* Tombol Draft Penentuan Juara Final (Juara 1, 2, 3, 4) */}
+          <button
+            type="button"
+            onClick={handleOpenDraftFinal}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 text-slate-950 text-xs font-bold rounded-xl transition shadow-lg shadow-amber-500/20"
+            title="Tunjuk langsung Juara 1, 2, 3, dan 4 untuk dipublikasikan ke Podium"
+          >
+            <Crown className="w-3.5 h-3.5" /> Draft Penentuan Juara Final 🏆
+          </button>
 
           <button
             type="button"
@@ -491,31 +505,28 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
           {matches.map((match, mIdx) => {
             const hasWinner = match.pesertaList.some(p => p.statusLolos === 'lolos');
             const winnerPeserta = match.pesertaList.find(p => p.statusLolos === 'lolos')?.peserta;
-            const isFinalMatch = match.babak === 'Final' || match.namaMatch.toLowerCase().includes('final');
+
+            // Filter peserta yang BISA dipilih untuk masuk ke match ini:
+            // 1. Belum ada di match ini
+            // 2. BELUM GUGUR di pertandingan lain
+            const availableForThisMatch = pesertaRefs.filter(ref => 
+              !match.pesertaList.some(p => p.peserta.id === ref.id) &&
+              !eliminatedParticipantIds.has(ref.id)
+            );
 
             return (
               <div 
                 key={match.id}
                 className={`bg-slate-900 border rounded-2xl overflow-hidden shadow-xl transition ${
-                  isFinalMatch 
-                    ? 'border-amber-500/50 shadow-amber-500/10' 
-                    : hasWinner 
+                  hasWinner 
                     ? 'border-emerald-500/40' 
                     : 'border-slate-800'
                 }`}
               >
                 {/* Match Header */}
-                <div className={`p-4 border-b flex flex-wrap items-center justify-between gap-3 ${
-                  isFinalMatch 
-                    ? 'bg-gradient-to-r from-amber-950/40 via-slate-850 to-slate-850 border-amber-500/40'
-                    : 'bg-slate-850 border-slate-800'
-                }`}>
+                <div className="p-4 bg-slate-850 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
-                    <span className={`w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center ${
-                      isFinalMatch 
-                        ? 'bg-amber-500 text-slate-950'
-                        : 'bg-red-500/20 text-red-400'
-                    }`}>
+                    <span className="w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center bg-red-500/20 text-red-400">
                       {mIdx + 1}
                     </span>
                     <input
@@ -537,36 +548,17 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    {/* Di Babak Final, berikan tombol Kunci Juara 1, 2, 3 */}
-                    {isFinalMatch && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const lolosList = match.pesertaList.filter(p => p.statusLolos === 'lolos').map(p => p.peserta);
-                          const j1 = lolosList[0] || match.pesertaList[0]?.peserta || null;
-                          const j2 = lolosList[1] || match.pesertaList[1]?.peserta || null;
-                          const j3 = lolosList[2] || match.pesertaList[2]?.peserta || null;
-                          handleLockPodium(j1, j2, j3);
-                        }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold text-xs rounded-lg shadow transition"
-                      >
-                        <Crown className="w-3.5 h-3.5" /> Kunci Hasil Juara Final
-                      </button>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteMatch(match.id)}
-                      className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-800 transition"
-                      title="Hapus Pertandingan Ini"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteMatch(match.id)}
+                    className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-800 transition"
+                    title="Hapus Pertandingan Ini"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
 
-                {/* Match Table / Cards */}
+                {/* Match Table */}
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs text-slate-300">
                     <thead className="bg-slate-800/60 text-slate-400 uppercase font-bold text-[10px] border-b border-slate-800">
@@ -574,7 +566,7 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
                         <th className="px-4 py-3 w-12 text-center">No</th>
                         <th className="px-4 py-3">Nama {lomba.tipePeserta === 'kelompok' ? 'Tim' : 'Peserta'}</th>
                         <th className="px-4 py-3 w-28 text-center">Skor / Waktu</th>
-                        <th className="px-4 py-3 text-center w-56">Status Hasil Pertandingan</th>
+                        <th className="px-4 py-3 text-center w-56">Status Pertandingan</th>
                         <th className="px-4 py-3 w-40 text-center">Tentukan Pemenang</th>
                         <th className="px-4 py-3 w-12 text-center">Aksi</th>
                       </tr>
@@ -652,7 +644,7 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
                                 type="button"
                                 onClick={() => handleSetMatchWinner(match.id, p.peserta.id)}
                                 className="px-3 py-1.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 text-white font-bold text-xs rounded-lg shadow transition flex items-center justify-center gap-1 mx-auto"
-                                title="Pilih ini sebagai Juara 1 di match ini (otomatis loloskan dan gugurkan yang lain)"
+                                title="Pilih ini sebagai Juara Heat (otomatis loloskan dan gugurkan yang lain)"
                               >
                                 <Award className="w-3.5 h-3.5 text-amber-300" /> Juara Heat Ini
                               </button>
@@ -673,7 +665,7 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
                       {match.pesertaList.length === 0 && (
                         <tr>
                           <td colSpan={6} className="text-center py-8 text-slate-500 text-xs italic">
-                            Belum ada peserta di pertandingan ini. Tambahkan peserta di bawah ini:
+                            Belum ada peserta di pertandingan ini. Pilih peserta aktif di bawah ini:
                           </td>
                         </tr>
                       )}
@@ -681,10 +673,10 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
                   </table>
                 </div>
 
-                {/* Bottom: Tambah Peserta ke Match */}
+                {/* Bottom: Tambah Peserta ke Match (FILTERED: TANPA YANG SUDAH GUGUR) */}
                 <div className="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between gap-3 text-xs flex-wrap">
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-400 font-semibold">Pilih Peserta untuk Pertandingan Ini:</span>
+                    <span className="text-slate-400 font-semibold">Pilih Peserta (Hanya yang Aktif/Belum Gugur):</span>
                     <select
                       onChange={(e) => {
                         handleAddPesertaToMatch(match.id, e.target.value);
@@ -693,19 +685,22 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
                       defaultValue=""
                       className="bg-slate-800 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-red-500"
                     >
-                      <option value="" disabled>+ Tambah Peserta...</option>
-                      {pesertaRefs
-                        .filter(ref => !match.pesertaList.some(p => p.peserta.id === ref.id))
-                        .map(ref => (
-                          <option key={ref.id} value={ref.id}>
-                            {ref.nama}
-                          </option>
-                        ))}
+                      <option value="" disabled>+ Tambah Peserta Aktif...</option>
+                      {availableForThisMatch.map(ref => (
+                        <option key={ref.id} value={ref.id}>
+                          {ref.nama}
+                        </option>
+                      ))}
                     </select>
+                    {availableForThisMatch.length === 0 && (
+                      <span className="text-[11px] text-amber-400 italic">
+                        (Semua peserta lain sudah bertanding/gugur)
+                      </span>
+                    )}
                   </div>
 
                   <span className="text-[11px] text-slate-500">
-                    Tips: Klik tombol <strong>&quot;Juara Heat Ini&quot;</strong> untuk meloloskan 1 pemenang secara otomatis.
+                    Tips: Klik tombol <strong>&quot;Juara Heat Ini&quot;</strong> untuk meloloskan 1 pemenang secara instan.
                   </span>
                 </div>
               </div>
@@ -830,6 +825,150 @@ export const LombaMultiMatchView: React.FC<LombaMultiMatchViewProps> = ({
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DRAFT PENENTUAN JUARA FINAL (JUARA 1, 2, 3, 4) */}
+      {isDraftFinalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
+          <div className="relative w-full max-w-2xl bg-slate-900 border border-amber-500/40 rounded-3xl shadow-2xl text-white overflow-hidden my-8">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 text-slate-950 border-b border-amber-400/40">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-slate-950/20 rounded-xl">
+                  <Crown className="w-6 h-6 text-slate-950" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black tracking-tight">
+                    Draft Penentuan Juara Final
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-900/80">
+                    Tunjuk langsung Juara 1, 2, 3, dan 4 untuk diterbitkan ke Podium
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDraftFinalOpen(false)}
+                className="p-1.5 text-slate-950/80 hover:text-slate-950 bg-black/10 hover:bg-black/20 rounded-full transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Form Content */}
+            <form onSubmit={handleSaveDraftFinal} className="p-6 space-y-5">
+              {/* Info Peserta yang Lolos */}
+              {qualifiedPesertaList.length > 0 && (
+                <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl">
+                  <span className="text-xs font-bold text-emerald-400 block mb-1">
+                    👑 Peserta yang Lolos dari Babak Penyisihan ({qualifiedPesertaList.length} Peserta):
+                  </span>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {qualifiedPesertaList.map(qp => (
+                      <span key={qp.id} className="px-2.5 py-1 bg-emerald-950/40 border border-emerald-500/40 rounded-lg text-xs font-bold text-emerald-300">
+                        {qp.nama}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Form Juara 1 (Emas) */}
+              <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl space-y-1.5">
+                <label className="block text-xs font-black uppercase tracking-wider text-amber-400">
+                  🥇 JUARA 1 (EMAS / PERTAMA) <span className="text-red-400">*</span>
+                </label>
+                <select
+                  required
+                  value={draftJuara1Id}
+                  onChange={(e) => setDraftJuara1Id(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-slate-900 border border-amber-500/50 rounded-xl text-white font-bold text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">-- Pilih Juara 1 --</option>
+                  {pesertaRefs.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.nama} {qualifiedIdSet.has(p.id) ? ' (👑 Lolos)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Form Juara 2 (Perak) */}
+              <div className="p-4 bg-slate-800/80 border border-slate-700 rounded-2xl space-y-1.5">
+                <label className="block text-xs font-black uppercase tracking-wider text-slate-300">
+                  🥈 JUARA 2 (PERAK / RUNNER UP)
+                </label>
+                <select
+                  value={draftJuara2Id}
+                  onChange={(e) => setDraftJuara2Id(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  <option value="">-- Pilih Juara 2 (Opsional) --</option>
+                  {pesertaRefs.filter(p => p.id !== draftJuara1Id).map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.nama} {qualifiedIdSet.has(p.id) ? ' (👑 Lolos)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Form Juara 3 (Perunggu) */}
+              <div className="p-4 bg-amber-950/20 border border-amber-800/40 rounded-2xl space-y-1.5">
+                <label className="block text-xs font-black uppercase tracking-wider text-amber-600">
+                  🥉 JUARA 3 (PERUNGGU)
+                </label>
+                <select
+                  value={draftJuara3Id}
+                  onChange={(e) => setDraftJuara3Id(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-slate-900 border border-amber-800/50 rounded-xl text-white font-bold text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  <option value="">-- Pilih Juara 3 (Opsional) --</option>
+                  {pesertaRefs.filter(p => p.id !== draftJuara1Id && p.id !== draftJuara2Id).map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.nama} {qualifiedIdSet.has(p.id) ? ' (👑 Lolos)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Form Juara 4 (Harapan) */}
+              <div className="p-4 bg-purple-950/20 border border-purple-800/40 rounded-2xl space-y-1.5">
+                <label className="block text-xs font-black uppercase tracking-wider text-purple-400">
+                  🎖️ JUARA 4 (HARAPAN)
+                </label>
+                <select
+                  value={draftJuaraHarapanId}
+                  onChange={(e) => setDraftJuaraHarapanId(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-slate-900 border border-purple-800/50 rounded-xl text-white font-bold text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="">-- Pilih Juara 4 / Harapan (Opsional) --</option>
+                  {pesertaRefs.filter(p => p.id !== draftJuara1Id && p.id !== draftJuara2Id && p.id !== draftJuara3Id).map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.nama} {qualifiedIdSet.has(p.id) ? ' (👑 Lolos)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Modal Buttons */}
+              <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsDraftFinalOpen(false)}
+                  className="px-4 py-2.5 text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 text-xs font-bold text-slate-950 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 rounded-xl shadow-lg shadow-amber-500/20 flex items-center gap-1.5 transition"
+                >
+                  <Sparkles className="w-4 h-4" /> Kunci & Terbitkan ke Podium
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -203,7 +203,7 @@ export const LombaPodium: React.FC<LombaPodiumProps> = ({ lomba }) => {
           Rekapitulasi Berita Acara Pemenang Lomba
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className={`grid gap-4 ${hasilJuara.juaraHarapan ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3'}`}>
           <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-1">
             <span className="text-xs font-bold text-amber-400">JUARA I (PERTAMA)</span>
             <p className="text-base font-bold text-white">{hasilJuara.juara1?.nama || '-'}</p>
@@ -227,6 +227,16 @@ export const LombaPodium: React.FC<LombaPodiumProps> = ({ lomba }) => {
               <p className="text-xs text-slate-400">Anggota: {hasilJuara.juara3.detailAnggota.join(', ')}</p>
             )}
           </div>
+
+          {hasilJuara.juaraHarapan && (
+            <div className="p-4 bg-purple-950/20 border border-purple-500/30 rounded-xl space-y-1">
+              <span className="text-xs font-bold text-purple-400">JUARA IV (HARAPAN)</span>
+              <p className="text-base font-bold text-white">{hasilJuara.juaraHarapan?.nama || '-'}</p>
+              {hasilJuara.juaraHarapan?.detailAnggota && (
+                <p className="text-xs text-slate-400">Anggota: {hasilJuara.juaraHarapan.detailAnggota.join(', ')}</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
