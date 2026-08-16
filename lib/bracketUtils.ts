@@ -261,7 +261,7 @@ export function swapBracketSlots(
 }
 
 /**
- * Generate struktur awal Multi-Match / Pertandingan Multi-Peserta dengan Poin
+ * Generate struktur awal Multi-Match / Pertandingan Multi-Peserta Sistem Heat Lolos & Gugur
  */
 export function generateInitialMultiMatches(pesertaList: PesertaRef[]): import('@/types/lomba').MultiMatch[] {
   if (pesertaList.length === 0) return [];
@@ -270,12 +270,13 @@ export function generateInitialMultiMatches(pesertaList: PesertaRef[]): import('
     return [
       {
         id: `match_final_${Date.now()}`,
-        namaMatch: 'Babak Final / Pertandingan Utama',
+        namaMatch: 'Babak Final (Semua Peserta)',
+        babak: 'Final',
         status: 'pending',
         pesertaList: pesertaList.map(p => ({
           peserta: p,
           skor: 0,
-          poin: 0
+          statusLolos: 'belum'
         }))
       }
     ];
@@ -291,12 +292,13 @@ export function generateInitialMultiMatches(pesertaList: PesertaRef[]): import('
     const letter = String.fromCharCode(65 + i);
     matches.push({
       id: `match_heat_${i + 1}_${Date.now()}_${i}`,
-      namaMatch: `Pertandingan ${i + 1} (Heat / Grup ${letter})`,
+      namaMatch: `Pertandingan ${i + 1} (Heat ${letter})`,
+      babak: 'Penyisihan',
       status: 'pending',
       pesertaList: chunk.map(p => ({
         peserta: p,
         skor: 0,
-        poin: 0
+        statusLolos: 'belum'
       }))
     });
   }

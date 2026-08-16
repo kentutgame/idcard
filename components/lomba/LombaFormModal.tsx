@@ -395,10 +395,10 @@ export const LombaFormModal: React.FC<LombaFormModalProps> = ({
                   }`}
                 >
                   <div className="flex items-center gap-1.5 font-bold text-sm mb-1 text-purple-400">
-                    <Layers className="w-4 h-4" /> Multi-Peserta & Poin
+                    <Layers className="w-4 h-4" /> Grup / Heat (Lolos & Gugur)
                   </div>
                   <span className="text-[11px] text-slate-400 font-normal">
-                    1 Match bisa &gt;2 peserta, perolehan poin ditentukan panitia
+                    1 Match bisa &gt;2 peserta, 1 pemenang lolos ke babak selanjutnya, sisanya gugur
                   </span>
                 </button>
 

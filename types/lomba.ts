@@ -3,6 +3,7 @@ export type TipePeserta = 'kelompok' | 'individu';
 export type FormatTanding = 'bracket' | 'multi_match' | 'sekaligus';
 export type StatusLomba = 'draft' | 'berlangsung' | 'selesai';
 export type StatusMatch = 'pending' | 'ongoing' | 'completed';
+export type StatusPesertaHeat = 'belum' | 'bermain' | 'lolos' | 'gugur';
 
 export interface PesertaIndividu {
   id: string;
@@ -56,15 +57,16 @@ export interface BracketRound {
 
 export interface MultiMatchParticipant {
   peserta: PesertaRef;
-  skor: number; // skor pertandingan (misal waktu atau perolehan)
-  poin: number; // poin yang ditentukan panitia (misal Juara 1 = 100 poin, Juara 2 = 75 poin, dll)
-  ranking?: number; // 1, 2, 3, 4...
+  skor?: number; // skor atau catatan waktu (opsional)
+  ranking?: number; // 1 (Juara/Lolos), 2, 3, dst.
+  statusLolos?: StatusPesertaHeat; // 'lolos' | 'gugur' | 'belum'
   catatan?: string;
 }
 
 export interface MultiMatch {
   id: string;
-  namaMatch: string; // Contoh: "Pertandingan 1 / Heat A", "Pertandingan 2 / Heat B", "Babak Final"
+  namaMatch: string; // Contoh: "Pertandingan 1 (Heat A)", "Pertandingan 2 (Heat B)", "Babak Final"
+  babak?: string; // "Penyisihan" | "Semifinal" | "Final"
   pesertaList: MultiMatchParticipant[];
   status: StatusMatch;
   catatan?: string;
@@ -96,7 +98,7 @@ export interface Lomba {
   // Data Pertandingan Bracket (1 vs 1)
   rounds: BracketRound[];
   
-  // Data Pertandingan Multi-Peserta (>2 per match dengan poin)
+  // Data Pertandingan Multi-Peserta (Grup Heat Lolos Babak)
   multiMatches?: MultiMatch[];
   
   // Hasil Akhir

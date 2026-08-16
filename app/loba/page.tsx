@@ -700,8 +700,8 @@ export default function LobaPage() {
                           {lomba.formatTanding === 'bracket' 
                             ? 'Bagan Knockout (Vs)' 
                             : lomba.formatTanding === 'multi_match'
-                            ? 'Multi-Peserta (>2 per Game / Poin)'
-                            : 'Sekaligus / Ranking Poin'}
+                            ? 'Grup / Heat (Lolos & Gugur)'
+                            : 'Sekaligus / Ranking Langsung'}
                         </span>
                       </div>
                     </div>
