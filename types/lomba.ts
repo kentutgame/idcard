@@ -66,11 +66,19 @@ export interface MultiMatchParticipant {
 export interface MultiMatch {
   id: string;
   namaMatch: string; // Contoh: "Pertandingan 1 (Heat A)", "Pertandingan 2 (Heat B)", "Babak Final"
-  babak?: string; // "Penyisihan" | "Semifinal" | "Final"
+  babak?: string; // "Babak 1", "Babak 2", "Babak 3", "Final"
   pesertaList: MultiMatchParticipant[];
   status: StatusMatch;
   catatan?: string;
   pemenangId?: string | null;
+}
+
+export interface HeatRound {
+  id: string;
+  nomorBabak: number; // 1, 2, 3, 4...
+  namaBabak: string; // Contoh: "Babak 1 (Penyisihan)", "Babak 2 (Perempat Final)", "Babak 3 (Semifinal)", "Babak Final"
+  matches: MultiMatch[];
+  isClosed?: boolean;
 }
 
 export interface HasilJuara {
@@ -98,8 +106,9 @@ export interface Lomba {
   // Data Pertandingan Bracket (1 vs 1)
   rounds: BracketRound[];
   
-  // Data Pertandingan Multi-Peserta (Grup Heat Lolos Babak)
+  // Data Pertandingan Multi-Peserta / Eliminasi Heat Bertingkat
   multiMatches?: MultiMatch[];
+  heatRounds?: HeatRound[];
   
   // Hasil Akhir
   hasilJuara: HasilJuara;

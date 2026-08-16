@@ -43,13 +43,15 @@ CREATE TABLE IF NOT EXISTS public.lomba_competitions (
     daftar_tim JSONB DEFAULT '[]'::jsonb,
     rounds JSONB DEFAULT '[]'::jsonb,
     multi_matches JSONB DEFAULT '[]'::jsonb,
+    heat_rounds JSONB DEFAULT '[]'::jsonb,
     hasil_juara JSONB DEFAULT '{"juara1": null, "juara2": null, "juara3": null}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Pastikan kolom multi_matches ada jika tabel sebelumnya sudah dibuat
+-- Pastikan kolom multi_matches & heat_rounds ada jika tabel sebelumnya sudah dibuat
 ALTER TABLE public.lomba_competitions ADD COLUMN IF NOT EXISTS multi_matches JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.lomba_competitions ADD COLUMN IF NOT EXISTS heat_rounds JSONB DEFAULT '[]'::jsonb;
 
 ALTER TABLE public.lomba_competitions ENABLE ROW LEVEL SECURITY;
 

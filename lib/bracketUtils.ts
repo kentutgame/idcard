@@ -305,3 +305,18 @@ export function generateInitialMultiMatches(pesertaList: PesertaRef[]): import('
 
   return matches;
 }
+
+/**
+ * Generate struktur awal Babak Bertingkat (HeatRounds)
+ */
+export function generateInitialHeatRounds(pesertaList: PesertaRef[]): import('@/types/lomba').HeatRound[] {
+  const initialMatches = generateInitialMultiMatches(pesertaList);
+  return [
+    {
+      id: `round_1_${Date.now()}`,
+      nomorBabak: 1,
+      namaBabak: 'Babak 1 (Penyisihan)',
+      matches: initialMatches
+    }
+  ];
+}

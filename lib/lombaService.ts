@@ -18,6 +18,7 @@ function mapDbToLomba(row: Record<string, unknown>): Lomba {
     daftarTim: Array.isArray(row.daftar_tim) ? (row.daftar_tim as Lomba['daftarTim']) : [],
     rounds: Array.isArray(row.rounds) ? (row.rounds as Lomba['rounds']) : [],
     multiMatches: Array.isArray(row.multi_matches) ? (row.multi_matches as Lomba['multiMatches']) : [],
+    heatRounds: Array.isArray(row.heat_rounds) ? (row.heat_rounds as Lomba['heatRounds']) : [],
     hasilJuara: (row.hasil_juara as Lomba['hasilJuara']) || { juara1: null, juara2: null, juara3: null }
   };
 }
@@ -35,6 +36,7 @@ function mapLombaToDb(lomba: Lomba) {
     daftar_tim: lomba.daftarTim,
     rounds: lomba.rounds,
     multi_matches: lomba.multiMatches || [],
+    heat_rounds: lomba.heatRounds || [],
     hasil_juara: lomba.hasilJuara,
     updated_at: new Date().toISOString()
   };

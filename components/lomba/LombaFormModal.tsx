@@ -24,7 +24,8 @@ import {
 import { 
   convertToPesertaRefs, 
   generateSingleEliminationBracket,
-  generateInitialMultiMatches 
+  generateInitialMultiMatches,
+  generateInitialHeatRounds
 } from '@/lib/bracketUtils';
 
 interface LombaFormModalProps {
@@ -246,6 +247,11 @@ export const LombaFormModal: React.FC<LombaFormModalProps> = ({
       multiMatches: initialData?.multiMatches && initialData.multiMatches.length > 0 && formatTanding === 'multi_match'
         ? initialData.multiMatches
         : initialMultiMatches,
+      heatRounds: initialData?.heatRounds && initialData.heatRounds.length > 0 && formatTanding === 'multi_match'
+        ? initialData.heatRounds
+        : formatTanding === 'multi_match'
+        ? generateInitialHeatRounds(pesertaRefs)
+        : [],
       hasilJuara: initialData?.hasilJuara || {
         juara1: null,
         juara2: null,
