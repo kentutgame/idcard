@@ -9,8 +9,8 @@ interface IdCardPreviewProps {
   scale?: number;
 }
 
-// ─── SHARED: Logo pakai img + mix-blend-mode:multiply / screen ───────────────
-function CardLogo({ dark = false }: { dark?: boolean }) {
+// ─── SHARED: Logo transparan asli tanpa mix-blend-mode ───────────────────────
+function CardLogo() {
   return (
     <div
       className="relative mb-1"
@@ -20,10 +20,7 @@ function CardLogo({ dark = false }: { dark?: boolean }) {
         src="/logo.png"
         alt="IPPCW REBORN"
         fill
-        className="object-contain"
-        style={{
-          mixBlendMode: dark ? 'screen' : 'multiply',
-        }}
+        className="object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
         priority
       />
     </div>
@@ -114,7 +111,7 @@ function Theme1({
           style={{ height: '5px', background: 'linear-gradient(90deg,#78350F,#D97706,#FCD34D,#D97706,#78350F)' }} />
 
         {/* LOGO */}
-        <CardLogo dark={false} />
+        <CardLogo />
 
         <p className="text-[10px] font-bold tracking-[0.22em] uppercase mt-0.5"
           style={{ color: '#FDE68A', textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>
@@ -224,7 +221,7 @@ function Theme2({
           style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.15) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.15) 1px,transparent 1px)', backgroundSize: '20px 20px' }} />
 
         {/* LOGO */}
-        <CardLogo dark={true} />
+        <CardLogo />
 
         <p className="text-[10px] font-bold tracking-[0.22em] uppercase mt-0.5 text-red-400">
           Cimanggu Wates
@@ -322,7 +319,7 @@ function Theme3({
           style={{ height: '2px', background: '#FCD34D' }} />
 
         {/* LOGO on white */}
-        <CardLogo dark={false} />
+        <CardLogo />
 
         <p className="text-[10px] font-black tracking-[0.2em] uppercase mt-0.5 text-red-700">
           Cimanggu Wates
