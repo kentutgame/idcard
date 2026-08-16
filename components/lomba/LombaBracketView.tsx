@@ -359,9 +359,14 @@ export const LombaBracketView: React.FC<LombaBracketViewProps> = ({
         )}
       </div>
 
+      {/* Mobile Swipe Hint */}
+      <div className="sm:hidden flex items-center justify-center gap-1.5 text-[11px] text-amber-300 font-semibold py-2 px-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+        <span>👉 Geser (swipe) layar ke samping untuk melihat babak selanjutnya</span>
+      </div>
+
       {/* Bracket Visualizer (Horizontal Scrollable Tree) */}
-      <div className="overflow-x-auto pb-6">
-        <div className="inline-flex gap-8 min-w-full p-2 items-stretch">
+      <div className="overflow-x-auto pb-6 scroll-smooth touch-pan-x">
+        <div className="inline-flex gap-4 sm:gap-8 min-w-full p-1 sm:p-2 items-stretch">
           {rounds.map((round, rIdx) => {
             const isFinal = rIdx === rounds.length - 1;
             const isSemi = rIdx === rounds.length - 2;
@@ -369,7 +374,7 @@ export const LombaBracketView: React.FC<LombaBracketViewProps> = ({
             return (
               <div 
                 key={rIdx} 
-                className="flex-1 min-w-[300px] max-w-[360px] flex flex-col space-y-4"
+                className="flex-1 min-w-[260px] sm:min-w-[300px] max-w-[340px] flex flex-col space-y-4"
               >
                 {/* Header Round */}
                 <div className={`p-2.5 rounded-xl border text-center font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 ${

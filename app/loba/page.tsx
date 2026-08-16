@@ -448,13 +448,13 @@ export default function LobaPage() {
 
         <div className="flex items-center gap-3">
           {/* Cloud Sync Badge Indicator */}
-          <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
             isCloudSync 
               ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
               : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
           }`}>
             {isCloudSync ? <Cloud className="w-3.5 h-3.5 text-emerald-400" /> : <CloudOff className="w-3.5 h-3.5 text-amber-400" />}
-            <span>{isCloudSync ? 'Supabase Cloud' : 'Mode Offline / Local'}</span>
+            <span className="hidden sm:inline">{isCloudSync ? 'Supabase Cloud' : 'Mode Offline'}</span>
           </div>
 
           <button
@@ -697,7 +697,11 @@ export default function LobaPage() {
                       <div className="flex items-center gap-1.5">
                         <Swords className="w-3.5 h-3.5 text-slate-500" />
                         <span>
-                          {lomba.formatTanding === 'bracket' ? 'Bagan Knockout (Vs)' : 'Sekaligus / Ranking Poin'}
+                          {lomba.formatTanding === 'bracket' 
+                            ? 'Bagan Knockout (Vs)' 
+                            : lomba.formatTanding === 'multi_match'
+                            ? 'Multi-Peserta (>2 per Game / Poin)'
+                            : 'Sekaligus / Ranking Poin'}
                         </span>
                       </div>
                     </div>

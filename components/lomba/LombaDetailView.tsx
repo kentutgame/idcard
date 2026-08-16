@@ -12,6 +12,7 @@ import {
 import { Lomba } from '@/types/lomba';
 import { LombaBracketView } from './LombaBracketView';
 import { LombaMassalView } from './LombaMassalView';
+import { LombaMultiMatchView } from './LombaMultiMatchView';
 import { LombaPodium } from './LombaPodium';
 
 interface LombaDetailViewProps {
@@ -108,7 +109,11 @@ export const LombaDetailView: React.FC<LombaDetailViewProps> = ({
 
               {/* Format Tanding */}
               <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-amber-400 border border-slate-700">
-                {lomba.formatTanding === 'bracket' ? 'Format Bracket (Vs)' : 'Format Sekaligus (Massal)'}
+                {lomba.formatTanding === 'bracket' 
+                  ? 'Format Bracket (Vs)' 
+                  : lomba.formatTanding === 'multi_match'
+                  ? 'Format Multi-Peserta / Poin'
+                  : 'Format Sekaligus (Massal)'}
               </span>
 
               {/* Status Lomba */}
@@ -142,24 +147,28 @@ export const LombaDetailView: React.FC<LombaDetailViewProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 mt-6 border-t border-slate-800 pt-4">
+        <div className="flex items-center gap-2 mt-6 border-t border-slate-800 pt-4 overflow-x-auto pb-1">
           <button
             type="button"
             onClick={() => setActiveTab('match')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
               activeTab === 'match'
                 ? 'bg-red-600 text-white shadow-lg shadow-red-600/20'
                 : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-750'
             }`}
           >
             <Swords className="w-4 h-4" />
-            {lomba.formatTanding === 'bracket' ? 'Bagan / Pertandingan' : 'Arena Skor Massal'}
+            {lomba.formatTanding === 'bracket' 
+              ? 'Bagan / Pertandingan' 
+              : lomba.formatTanding === 'multi_match'
+              ? 'Arena Multi-Game & Poin'
+              : 'Arena Skor Massal'}
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('peserta')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
               activeTab === 'peserta'
                 ? 'bg-red-600 text-white shadow-lg shadow-red-600/20'
                 : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-750'
@@ -172,7 +181,7 @@ export const LombaDetailView: React.FC<LombaDetailViewProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('podium')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
               activeTab === 'podium'
                 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 shadow-lg shadow-amber-500/20'
                 : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-750'
@@ -191,6 +200,12 @@ export const LombaDetailView: React.FC<LombaDetailViewProps> = ({
             <LombaBracketView 
               lomba={lomba} 
               onUpdateLomba={onUpdateLomba} 
+              onFinishLomba={handleFinishLomba}
+            />
+          ) : lomba.formatTanding === 'multi_match' ? (
+            <LombaMultiMatchView
+              lomba={lomba}
+              onUpdateLomba={onUpdateLomba}
               onFinishLomba={handleFinishLomba}
             />
           ) : (

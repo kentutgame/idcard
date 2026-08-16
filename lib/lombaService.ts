@@ -17,6 +17,7 @@ function mapDbToLomba(row: Record<string, unknown>): Lomba {
     pesertaIndividu: Array.isArray(row.peserta_individu) ? (row.peserta_individu as Lomba['pesertaIndividu']) : [],
     daftarTim: Array.isArray(row.daftar_tim) ? (row.daftar_tim as Lomba['daftarTim']) : [],
     rounds: Array.isArray(row.rounds) ? (row.rounds as Lomba['rounds']) : [],
+    multiMatches: Array.isArray(row.multi_matches) ? (row.multi_matches as Lomba['multiMatches']) : [],
     hasilJuara: (row.hasil_juara as Lomba['hasilJuara']) || { juara1: null, juara2: null, juara3: null }
   };
 }
@@ -33,6 +34,7 @@ function mapLombaToDb(lomba: Lomba) {
     peserta_individu: lomba.pesertaIndividu,
     daftar_tim: lomba.daftarTim,
     rounds: lomba.rounds,
+    multi_matches: lomba.multiMatches || [],
     hasil_juara: lomba.hasilJuara,
     updated_at: new Date().toISOString()
   };
@@ -41,7 +43,7 @@ function mapLombaToDb(lomba: Lomba) {
 /**
  * Mengambil semua data lomba dari Supabase (dengan fallback ke localStorage jika tabel belum dibuat/offline)
  */
-export async function fetchLombaList(): Promise<{ data: Lomba[]; isCloud: boolean }> {
+export async function fetchLombaList(): Promise<{ data: Lomba[]; isCloud: boolean; errorMsg?: string }> {
   if (isSupabaseConfigured && supabase) {
     try {
       const { data, error } = await supabase
@@ -57,34 +59,41 @@ export async function fetchLombaList(): Promise<{ data: Lomba[]; isCloud: boolea
         }
         return { data: mapped, isCloud: true };
       } else if (error) {
-        console.warn('Gagal memuat dari Supabase (mungkin tabel lomba_competitions belum dibuat di SQL editor), fallback ke local:', error.message);
+        console.warn('Supabase query error:', error.message);
+        return { data: getLocalLombaList(), isCloud: false, errorMsg: error.message };
       }
-    } catch (err) {
-      console.warn('Supabase fetch error, fallback ke local storage:', err);
+    } catch (err: unknown) {
+      console.warn('Supabase fetch error:', err);
+      const msg = err instanceof Error ? err.message : String(err);
+      return { data: getLocalLombaList(), isCloud: false, errorMsg: msg };
     }
   }
 
-  // Fallback Local Storage
+  return { data: getLocalLombaList(), isCloud: false };
+}
+
+function getLocalLombaList(): Lomba[] {
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem(STORAGE_KEY_LOMBA);
     if (saved) {
       try {
-        return { data: JSON.parse(saved), isCloud: false };
+        return JSON.parse(saved);
       } catch (e) {
         console.error(e);
       }
     }
   }
-
-  return { data: [], isCloud: false };
+  return [];
 }
 
 /**
  * Menyimpan / memperbarui lomba ke Supabase dan localStorage
  */
-export async function saveLombaToDb(lomba: Lomba): Promise<{ success: boolean; isCloud: boolean }> {
+export async function saveLombaToDb(lomba: Lomba): Promise<{ success: boolean; isCloud: boolean; errorMsg?: string }> {
   let isCloudSuccess = false;
+  let errorMsg: string | undefined;
 
+  // 1. Simpan ke Supabase Cloud
   if (isSupabaseConfigured && supabase) {
     try {
       const dbPayload = mapLombaToDb(lomba);
@@ -95,20 +104,50 @@ export async function saveLombaToDb(lomba: Lomba): Promise<{ success: boolean; i
       if (!error) {
         isCloudSuccess = true;
       } else {
+        errorMsg = error.message;
         console.warn('Upsert ke Supabase gagal:', error.message);
+
+        // Fallback retry jika kolom multi_matches belum ada di tabel Supabase
+        if (error.message.includes('multi_matches')) {
+          const { multi_matches, ...payloadWithoutMulti } = dbPayload;
+          void multi_matches;
+          const retryRes = await supabase
+            .from('lomba_competitions')
+            .upsert(payloadWithoutMulti, { onConflict: 'id' });
+
+          if (!retryRes.error) {
+            isCloudSuccess = true;
+            errorMsg = undefined;
+          }
+        }
       }
-    } catch (err) {
-      console.warn('Supabase upsert error:', err);
+    } catch (err: unknown) {
+      console.warn('Supabase upsert exception:', err);
+      errorMsg = err instanceof Error ? err.message : String(err);
     }
   }
 
-  return { success: true, isCloud: isCloudSuccess };
+  // 2. Simpan juga selalu ke localStorage sebagai backup offline
+  if (typeof window !== 'undefined') {
+    const localList = getLocalLombaList();
+    const existingIdx = localList.findIndex(item => item.id === lomba.id);
+    if (existingIdx >= 0) {
+      localList[existingIdx] = lomba;
+    } else {
+      localList.unshift(lomba);
+    }
+    localStorage.setItem(STORAGE_KEY_LOMBA, JSON.stringify(localList));
+  }
+
+  return { success: true, isCloud: isCloudSuccess, errorMsg };
 }
 
 /**
  * Menghapus data lomba dari Supabase dan localStorage
  */
 export async function deleteLombaFromDb(id: string): Promise<boolean> {
+  let deletedFromCloud = false;
+
   if (isSupabaseConfigured && supabase) {
     try {
       const { error } = await supabase
@@ -116,10 +155,17 @@ export async function deleteLombaFromDb(id: string): Promise<boolean> {
         .delete()
         .eq('id', id);
 
-      if (!error) return true;
+      if (!error) deletedFromCloud = true;
     } catch (err) {
       console.warn('Supabase delete error:', err);
     }
   }
-  return false;
+
+  if (typeof window !== 'undefined') {
+    const localList = getLocalLombaList();
+    const filtered = localList.filter(item => item.id !== id);
+    localStorage.setItem(STORAGE_KEY_LOMBA, JSON.stringify(filtered));
+  }
+
+  return deletedFromCloud;
 }

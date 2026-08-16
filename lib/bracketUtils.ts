@@ -259,3 +259,47 @@ export function swapBracketSlots(
 
   return updatedRounds;
 }
+
+/**
+ * Generate struktur awal Multi-Match / Pertandingan Multi-Peserta dengan Poin
+ */
+export function generateInitialMultiMatches(pesertaList: PesertaRef[]): import('@/types/lomba').MultiMatch[] {
+  if (pesertaList.length === 0) return [];
+
+  if (pesertaList.length <= 4) {
+    return [
+      {
+        id: `match_final_${Date.now()}`,
+        namaMatch: 'Babak Final / Pertandingan Utama',
+        status: 'pending',
+        pesertaList: pesertaList.map(p => ({
+          peserta: p,
+          skor: 0,
+          poin: 0
+        }))
+      }
+    ];
+  }
+
+  // Bagi per 3 atau 4 peserta per pertandingan / heat
+  const groupSize = pesertaList.length <= 8 ? Math.ceil(pesertaList.length / 2) : 4;
+  const matches: import('@/types/lomba').MultiMatch[] = [];
+  const totalMatches = Math.ceil(pesertaList.length / groupSize);
+
+  for (let i = 0; i < totalMatches; i++) {
+    const chunk = pesertaList.slice(i * groupSize, (i + 1) * groupSize);
+    const letter = String.fromCharCode(65 + i);
+    matches.push({
+      id: `match_heat_${i + 1}_${Date.now()}_${i}`,
+      namaMatch: `Pertandingan ${i + 1} (Heat / Grup ${letter})`,
+      status: 'pending',
+      pesertaList: chunk.map(p => ({
+        peserta: p,
+        skor: 0,
+        poin: 0
+      }))
+    });
+  }
+
+  return matches;
+}

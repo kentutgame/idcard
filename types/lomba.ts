@@ -1,6 +1,6 @@
 export type KategoriLomba = 'anak-anak' | 'remaja' | 'ibu-ibu' | 'umum';
 export type TipePeserta = 'kelompok' | 'individu';
-export type FormatTanding = 'bracket' | 'sekaligus';
+export type FormatTanding = 'bracket' | 'multi_match' | 'sekaligus';
 export type StatusLomba = 'draft' | 'berlangsung' | 'selesai';
 export type StatusMatch = 'pending' | 'ongoing' | 'completed';
 
@@ -10,6 +10,7 @@ export interface PesertaIndividu {
   nomorPeserta?: string;
   catatan?: string;
   skor?: number;
+  poin?: number;
   ranking?: number;
 }
 
@@ -20,6 +21,7 @@ export interface TimPeserta {
   kapten?: string;
   catatan?: string;
   skor?: number;
+  poin?: number;
   ranking?: number;
 }
 
@@ -52,6 +54,23 @@ export interface BracketRound {
   matches: Match[];
 }
 
+export interface MultiMatchParticipant {
+  peserta: PesertaRef;
+  skor: number; // skor pertandingan (misal waktu atau perolehan)
+  poin: number; // poin yang ditentukan panitia (misal Juara 1 = 100 poin, Juara 2 = 75 poin, dll)
+  ranking?: number; // 1, 2, 3, 4...
+  catatan?: string;
+}
+
+export interface MultiMatch {
+  id: string;
+  namaMatch: string; // Contoh: "Pertandingan 1 / Heat A", "Pertandingan 2 / Heat B", "Babak Final"
+  pesertaList: MultiMatchParticipant[];
+  status: StatusMatch;
+  catatan?: string;
+  pemenangId?: string | null;
+}
+
 export interface HasilJuara {
   juara1: PesertaRef | null;
   juara2: PesertaRef | null;
@@ -74,8 +93,11 @@ export interface Lomba {
   pesertaIndividu: PesertaIndividu[];
   daftarTim: TimPeserta[];
   
-  // Data Pertandingan Bracket
+  // Data Pertandingan Bracket (1 vs 1)
   rounds: BracketRound[];
+  
+  // Data Pertandingan Multi-Peserta (>2 per match dengan poin)
+  multiMatches?: MultiMatch[];
   
   // Hasil Akhir
   hasilJuara: HasilJuara;

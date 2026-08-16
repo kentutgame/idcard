@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Plus, 
@@ -10,7 +10,8 @@ import {
   Trophy, 
   Swords, 
   ListOrdered,
-  Sparkles
+  Sparkles,
+  Layers
 } from 'lucide-react';
 import { 
   Lomba, 
@@ -20,7 +21,11 @@ import {
   TimPeserta, 
   PesertaIndividu 
 } from '@/types/lomba';
-import { convertToPesertaRefs, generateSingleEliminationBracket } from '@/lib/bracketUtils';
+import { 
+  convertToPesertaRefs, 
+  generateSingleEliminationBracket,
+  generateInitialMultiMatches 
+} from '@/lib/bracketUtils';
 
 interface LombaFormModalProps {
   isOpen: boolean;
@@ -35,35 +40,66 @@ export const LombaFormModal: React.FC<LombaFormModalProps> = ({
   onSave,
   initialData
 }) => {
-  const [judul, setJudul] = useState(initialData?.judul || '');
-  const [kategori, setKategori] = useState<KategoriLomba>(initialData?.kategori || 'anak-anak');
-  const [tipePeserta, setTipePeserta] = useState<TipePeserta>(initialData?.tipePeserta || 'kelompok');
-  const [formatTanding, setFormatTanding] = useState<FormatTanding>(initialData?.formatTanding || 'bracket');
+  const [judul, setJudul] = useState('');
+  const [kategori, setKategori] = useState<KategoriLomba>('anak-anak');
+  const [tipePeserta, setTipePeserta] = useState<TipePeserta>('kelompok');
+  const [formatTanding, setFormatTanding] = useState<FormatTanding>('bracket');
+  const [daftarTim, setDaftarTim] = useState<TimPeserta[]>([]);
+  const [pesertaIndividu, setPesertaIndividu] = useState<PesertaIndividu[]>([]);
 
-  // State untuk Kelompok
-  const [daftarTim, setDaftarTim] = useState<TimPeserta[]>(
-    initialData?.daftarTim && initialData.daftarTim.length > 0
-      ? initialData.daftarTim
-      : [
+  const [bulkInput, setBulkInput] = useState('');
+  const [showBulkInput, setShowBulkInput] = useState(false);
+
+  // SINKRONISASI DATA KETIKA MODAL DIBUKA (EDIT vs TAMBAH BARU)
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (initialData) {
+      // Mode Edit: Isi semua data yang sudah ada
+      setJudul(initialData.judul || '');
+      setKategori(initialData.kategori || 'anak-anak');
+      setTipePeserta(initialData.tipePeserta || 'kelompok');
+      setFormatTanding(initialData.formatTanding || 'bracket');
+
+      if (initialData.daftarTim && initialData.daftarTim.length > 0) {
+        setDaftarTim(JSON.parse(JSON.stringify(initialData.daftarTim)));
+      } else {
+        setDaftarTim([
           { id: 'tim_1', namaTim: 'Tim A', anggota: ['Peserta 1', 'Peserta 2'] },
           { id: 'tim_2', namaTim: 'Tim B', anggota: ['Peserta 1', 'Peserta 2'] }
-        ]
-  );
+        ]);
+      }
 
-  // State untuk Individu
-  const [pesertaIndividu, setPesertaIndividu] = useState<PesertaIndividu[]>(
-    initialData?.pesertaIndividu && initialData.pesertaIndividu.length > 0
-      ? initialData.pesertaIndividu
-      : [
+      if (initialData.pesertaIndividu && initialData.pesertaIndividu.length > 0) {
+        setPesertaIndividu(JSON.parse(JSON.stringify(initialData.pesertaIndividu)));
+      } else {
+        setPesertaIndividu([
           { id: 'p_1', nama: 'Peserta 1' },
           { id: 'p_2', nama: 'Peserta 2' },
           { id: 'p_3', nama: 'Peserta 3' },
           { id: 'p_4', nama: 'Peserta 4' }
-        ]
-  );
-
-  const [bulkInput, setBulkInput] = useState('');
-  const [showBulkInput, setShowBulkInput] = useState(false);
+        ]);
+      }
+    } else {
+      // Mode Tambah Baru: Set default
+      setJudul('');
+      setKategori('anak-anak');
+      setTipePeserta('kelompok');
+      setFormatTanding('bracket');
+      setDaftarTim([
+        { id: 'tim_1', namaTim: 'Tim A', anggota: ['Peserta 1', 'Peserta 2'] },
+        { id: 'tim_2', namaTim: 'Tim B', anggota: ['Peserta 1', 'Peserta 2'] }
+      ]);
+      setPesertaIndividu([
+        { id: 'p_1', nama: 'Peserta 1' },
+        { id: 'p_2', nama: 'Peserta 2' },
+        { id: 'p_3', nama: 'Peserta 3' },
+        { id: 'p_4', nama: 'Peserta 4' }
+      ]);
+    }
+    setBulkInput('');
+    setShowBulkInput(false);
+  }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
@@ -181,10 +217,16 @@ export const LombaFormModal: React.FC<LombaFormModalProps> = ({
       return;
     }
 
-    // Generate bracket jika mode bracket
     const pesertaRefs = convertToPesertaRefs(tipePeserta, cleanedTim, cleanedIndividu);
+
+    // Initial Bracket Setup
     const initialRounds = formatTanding === 'bracket' 
       ? generateSingleEliminationBracket(pesertaRefs)
+      : [];
+
+    // Initial MultiMatch Setup
+    const initialMultiMatches = formatTanding === 'multi_match'
+      ? generateInitialMultiMatches(pesertaRefs)
       : [];
 
     const newLomba: Lomba = {
@@ -198,9 +240,12 @@ export const LombaFormModal: React.FC<LombaFormModalProps> = ({
       updatedAt: new Date().toISOString(),
       pesertaIndividu: cleanedIndividu,
       daftarTim: cleanedTim,
-      rounds: initialData?.rounds && initialData.rounds.length > 0 && initialData.tipePeserta === tipePeserta
+      rounds: initialData?.rounds && initialData.rounds.length > 0 && initialData.tipePeserta === tipePeserta && formatTanding === 'bracket'
         ? initialData.rounds
         : initialRounds,
+      multiMatches: initialData?.multiMatches && initialData.multiMatches.length > 0 && formatTanding === 'multi_match'
+        ? initialData.multiMatches
+        : initialMultiMatches,
       hasilJuara: initialData?.hasilJuara || {
         juara1: null,
         juara2: null,
@@ -285,7 +330,7 @@ export const LombaFormModal: React.FC<LombaFormModalProps> = ({
           </div>
 
           {/* Tipe & Format Tanding */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-4">
             {/* Tipe Peserta */}
             <div>
               <label className="block text-sm font-semibold text-slate-200 mb-2">
@@ -317,33 +362,61 @@ export const LombaFormModal: React.FC<LombaFormModalProps> = ({
               </div>
             </div>
 
-            {/* Format Tanding */}
+            {/* Format Tanding (3 Pilihan) */}
             <div>
               <label className="block text-sm font-semibold text-slate-200 mb-2">
-                Format Bagan / Pertandingan <span className="text-red-400">*</span>
+                Format Pertandingan <span className="text-red-400">*</span>
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <button
                   type="button"
                   onClick={() => setFormatTanding('bracket')}
-                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border text-sm font-medium transition ${
+                  className={`flex flex-col items-start p-3 rounded-xl border text-xs font-semibold transition ${
                     formatTanding === 'bracket'
-                      ? 'bg-amber-600 text-white border-amber-500 shadow'
+                      ? 'bg-amber-600/30 border-amber-500 text-white shadow-lg shadow-amber-600/10'
                       : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-750'
                   }`}
                 >
-                  <Swords className="w-4 h-4" /> Bracket (Vs / Knockout)
+                  <div className="flex items-center gap-1.5 font-bold text-sm mb-1 text-amber-400">
+                    <Swords className="w-4 h-4" /> Bracket (1 vs 1)
+                  </div>
+                  <span className="text-[11px] text-slate-400 font-normal">
+                    Bagan eliminasi turnamen Tim vs Tim atau 1 lawan 1
+                  </span>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFormatTanding('multi_match')}
+                  className={`flex flex-col items-start p-3 rounded-xl border text-xs font-semibold transition ${
+                    formatTanding === 'multi_match'
+                      ? 'bg-purple-600/30 border-purple-500 text-white shadow-lg shadow-purple-600/10'
+                      : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-750'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-sm mb-1 text-purple-400">
+                    <Layers className="w-4 h-4" /> Multi-Peserta & Poin
+                  </div>
+                  <span className="text-[11px] text-slate-400 font-normal">
+                    1 Match bisa &gt;2 peserta, perolehan poin ditentukan panitia
+                  </span>
+                </button>
+
                 <button
                   type="button"
                   onClick={() => setFormatTanding('sekaligus')}
-                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border text-sm font-medium transition ${
+                  className={`flex flex-col items-start p-3 rounded-xl border text-xs font-semibold transition ${
                     formatTanding === 'sekaligus'
-                      ? 'bg-amber-600 text-white border-amber-500 shadow'
+                      ? 'bg-blue-600/30 border-blue-500 text-white shadow-lg shadow-blue-600/10'
                       : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-750'
                   }`}
                 >
-                  <ListOrdered className="w-4 h-4" /> Sekaligus (Massal)
+                  <div className="flex items-center gap-1.5 font-bold text-sm mb-1 text-blue-400">
+                    <ListOrdered className="w-4 h-4" /> Sekaligus (Massal)
+                  </div>
+                  <span className="text-[11px] text-slate-400 font-normal">
+                    Semua peserta main sekaligus dalam 1 tabel ranking langsung
+                  </span>
                 </button>
               </div>
             </div>
@@ -536,7 +609,7 @@ export const LombaFormModal: React.FC<LombaFormModalProps> = ({
               type="submit"
               className="px-6 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 rounded-xl shadow-lg shadow-red-600/30 flex items-center gap-2 transition"
             >
-              <Sparkles className="w-4 h-4" /> Simpan & Buat Lomba
+              <Sparkles className="w-4 h-4" /> {initialData ? 'Simpan Perubahan' : 'Simpan & Buat Lomba'}
             </button>
           </div>
         </form>
