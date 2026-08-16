@@ -25,7 +25,7 @@ export function WatermarkFooter() {
   const dmUrl = 'https://ig.me/m/ewvlnxx';
 
   return (
-    <footer className="w-full mt-auto border-t border-red-900/50 bg-[#120000]/95 backdrop-blur-md relative z-40">
+    <footer className="w-full mt-auto border-t border-red-900/50 bg-[#120000]/95 backdrop-blur-md relative z-40 print:hidden">
       {/* Gold Top Accent Line */}
       <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-yellow-500/80 to-transparent" />
 

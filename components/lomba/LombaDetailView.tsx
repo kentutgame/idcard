@@ -7,13 +7,15 @@ import {
   Users, 
   Play, 
   Edit3, 
-  Crown
+  Crown,
+  Printer
 } from 'lucide-react';
 import { Lomba } from '@/types/lomba';
 import { LombaBracketView } from './LombaBracketView';
 import { LombaMassalView } from './LombaMassalView';
 import { LombaMultiMatchView } from './LombaMultiMatchView';
 import { LombaPodium } from './LombaPodium';
+import { LombaPrintPreviewModal } from './LombaPrintPreviewModal';
 
 interface LombaDetailViewProps {
   lomba: Lomba;
@@ -29,6 +31,7 @@ export const LombaDetailView: React.FC<LombaDetailViewProps> = ({
   onEditLomba
 }) => {
   const [activeTab, setActiveTab] = useState<'match' | 'peserta' | 'podium'>('match');
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   const handleStartCompetition = () => {
     onUpdateLomba({
@@ -65,7 +68,7 @@ export const LombaDetailView: React.FC<LombaDetailViewProps> = ({
             <ArrowLeft className="w-4 h-4" /> Kembali ke Daftar Lomba
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {lomba.status === 'draft' && (
               <button
                 type="button"
@@ -75,6 +78,14 @@ export const LombaDetailView: React.FC<LombaDetailViewProps> = ({
                 <Play className="w-4 h-4" /> Mulai Pertandingan
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => setIsPreviewModalOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 font-semibold text-xs rounded-xl border border-amber-500/40 transition"
+              title="Pratinjau & Cetak Laporan 3 Lembar HVS"
+            >
+              <Printer className="w-3.5 h-3.5 text-amber-400" /> Cetak / Unduh (3 Lembar)
+            </button>
             <button
               type="button"
               onClick={onEditLomba}
@@ -295,6 +306,13 @@ export const LombaDetailView: React.FC<LombaDetailViewProps> = ({
       {activeTab === 'podium' && (
         <LombaPodium lomba={lomba} />
       )}
+
+      {/* Modal Preview Cetak 3 Lembar */}
+      <LombaPrintPreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
+        lomba={lomba}
+      />
     </div>
   );
 };

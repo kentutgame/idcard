@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { 
   Trophy, 
@@ -8,9 +8,12 @@ import {
   Medal, 
   Printer, 
   Sparkles, 
-  Award
+  Award,
+  FileText,
+  Eye
 } from 'lucide-react';
 import { Lomba } from '@/types/lomba';
+import { LombaPrintPreviewModal } from './LombaPrintPreviewModal';
 
 interface LombaPodiumProps {
   lomba: Lomba;
@@ -18,6 +21,7 @@ interface LombaPodiumProps {
 
 export const LombaPodium: React.FC<LombaPodiumProps> = ({ lomba }) => {
   const { hasilJuara } = lomba;
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // Efek confetti selebrasi saat dibuka
   useEffect(() => {
@@ -83,20 +87,29 @@ export const LombaPodium: React.FC<LombaPodiumProps> = ({ lomba }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
             onClick={handleTriggerConfetti}
-            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition"
           >
             <Sparkles className="w-4 h-4" /> Selebrasi 🎉
           </button>
+          
+          <button
+            type="button"
+            onClick={() => setIsPreviewOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-800 hover:bg-slate-750 text-amber-300 font-bold text-xs rounded-xl border border-amber-500/40 shadow transition"
+          >
+            <Eye className="w-4 h-4 text-amber-400" /> Pratinjau 3 Lembar
+          </button>
+
           <button
             type="button"
             onClick={handlePrint}
-            className="flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl border border-slate-700 shadow transition"
+            className="flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-red-600/30 transition"
           >
-            <Printer className="w-4 h-4 text-red-400" /> Cetak / Unduh Rekap
+            <Printer className="w-4 h-4" /> Cetak / Unduh PDF (3 Lembar)
           </button>
         </div>
       </div>
@@ -239,6 +252,13 @@ export const LombaPodium: React.FC<LombaPodiumProps> = ({ lomba }) => {
           )}
         </div>
       </div>
+
+      {/* Modal Preview Cetak 3 Lembar */}
+      <LombaPrintPreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        lomba={lomba}
+      />
     </div>
   );
 };
