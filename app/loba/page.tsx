@@ -142,10 +142,10 @@ export default function LobaPage() {
     const u = usernameInput.trim();
     const p = passwordInput.trim();
 
-    if (u === 'Panitia81' && p === 'ippcw05') {
+    if ((u.toLowerCase() === 'ilham' || u === 'ilham') && p === 'ilham') {
       const user: UserAuth = {
-        username: 'Panitia81',
-        namaLengkap: 'Panitia 17-an (RW 05)',
+        username: 'ilham',
+        namaLengkap: 'Ilham (Panitia Lomba)',
         role: 'admin',
         isLoggedIn: true
       };
@@ -313,7 +313,7 @@ export default function LobaPage() {
                     required
                     value={usernameInput}
                     onChange={(e) => setUsernameInput(e.target.value)}
-                    placeholder="Contoh: Panitia81 atau ziqi"
+                    placeholder="Masukkan username"
                     className="w-full pl-10 pr-4 py-2.5 bg-slate-800/90 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
                   />
                 </div>
@@ -343,17 +343,6 @@ export default function LobaPage() {
                 <ShieldCheck className="w-4 h-4" /> Masuk ke Sistem Lomba
               </button>
             </form>
-
-            {/* Quick Helper / Credentials Info */}
-            <div className="mt-6 pt-5 border-t border-slate-800/80 text-center">
-              <span className="text-[11px] text-slate-500 block mb-1 font-semibold">
-                Akun Panitia Terdaftar:
-              </span>
-              <div className="inline-flex gap-2 text-[11px] text-slate-400">
-                <span className="px-2 py-0.5 bg-slate-800 rounded border border-slate-700">Panitia81</span>
-                <span className="px-2 py-0.5 bg-slate-800 rounded border border-slate-700">ziqi</span>
-              </div>
-            </div>
           </div>
         </main>
 
